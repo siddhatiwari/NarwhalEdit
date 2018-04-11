@@ -28,14 +28,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     tabbar.cpp \
-    sidebar.cpp \
-    codeeditor.cpp
+    codeeditor.cpp \
+    highlighter.cpp
 
 HEADERS += \
         mainwindow.h \
     tabbar.h \
-    sidebar.h \
-    codeeditor.h
+    codeeditor.h \
+    highlighter.h
 
 FORMS += \
         mainwindow.ui

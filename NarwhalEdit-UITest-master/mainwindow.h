@@ -5,7 +5,6 @@
 #include <QMainWindow>
 #include <QTextEdit>
 #include "tabbar.h"
-#include "sidebar.h"
 #include <QTextCursor>
 
 
@@ -56,7 +55,6 @@ private:
     void createSideBar();
 
     TabBar *tabBar;
-    Sidebar *SideBar;
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *formatMenu;

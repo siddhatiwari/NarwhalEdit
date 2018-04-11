@@ -4,6 +4,7 @@
 #include <QTextCursor>
 #include <Qdebug>
 #include "codeeditor.h"
+#include "highlighter.h"
 
 TabBar::TabBar()
 {
@@ -16,14 +17,6 @@ void TabBar::createEditorTab()
 {
     CodeEditor *textEdit = new CodeEditor();
     this->addTab(textEdit, "New tab");
-    //qDebug() << this->currentWidget()->toPlainText();
-    /*QTextCursor *curse = new QTextCursor();
-    curse->setPosition(5);
-    int pos = curse->position();
-    qDebug()<<pos;*/
-
-    //I initially tried using the cursor class to keep track of where the user's pointer is in the text box, but I don't know if
-    //it works like that.
 
 }
 

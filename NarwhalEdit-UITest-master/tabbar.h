@@ -11,7 +11,6 @@ public:
     TabBar();
     //virtual ~TabBar();
     void createEditorTab();
-
 private slots:
     void handleCloseRequested(int tabIndex);
 };

@@ -3,6 +3,7 @@
 
 #include <QPlainTextEdit>
 #include <QObject>
+#include "highlighter.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -22,6 +23,10 @@ public:
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
 
+private:
+    QWidget *lineNumberArea;
+    Highlighter *highlighter;
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
@@ -29,9 +34,8 @@ private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
+    void rehighlight();
 
-private:
-    QWidget *lineNumberArea;
 };
 
 
@@ -45,6 +49,7 @@ public:
     QSize sizeHint() const override {
         return QSize(codeEditor->lineNumberAreaWidth(), 0);
     }
+
 
 protected:
     void paintEvent(QPaintEvent *event) override {
