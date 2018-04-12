@@ -11,32 +11,6 @@
 #include <QGraphicsRectItem>
 #include <QRect>
 
-
-
-/* Siddha 4/4/18:
- *
- * Look starting from line # 124 for the code examples I added, they are
- * executed when the menubar 'cut' option is pressed.
- *
- * Also, add name and date to comments for better organization.
- *
- * This should be useful:
- * http://doc.qt.io/qt-5/qtextedit.html
- * http://doc.qt.io/archives/qt-4.8/qtabwidget.html#currentWidget
- *
- * UI TODO:
- * Convert the code to use QPlainTextEdit instead of QTextEdit,
- * because QTextEdit has additional functionality like tables which arent
- * needed for this project
- *
- * Add functionality to each menu button
- *
- * Add Line numbers on the side
- *
- * etc.
- *
- * */
-
 MainWindow::MainWindow()
 {
     QWidget *widget = new QWidget;
@@ -52,7 +26,6 @@ MainWindow::MainWindow()
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setMargin(5);
-    //layout->addWidget(topFiller);
     layout->addWidget(infoLabel);
     widget->setLayout(layout);
 
@@ -61,8 +34,7 @@ MainWindow::MainWindow()
     createTabBar();
 
     layout->addWidget(tabBar);
-
-    //layout->addWidget(SideBar);
+    tabBar->createEditorTab();
 
     QString message = tr("A context menu is available by right-clicking");
     statusBar()->showMessage(message);
@@ -71,27 +43,6 @@ MainWindow::MainWindow()
     setMinimumSize(160, 160);
     resize(480, 320);
 
-    /*QGraphicsRectItem * r2 = new QGraphicsRectItem;
-    r2->setRect(100, 200, 100, 100);
-    layout->addItem(r2);*/
-
-
-    //QEvent clickEvent = new QEvent(QEvent::MouseButtonPress,pos());
-    //int cursorLine  = (clickEvent->cursorRect().y() - 4) / 33 + 1 ;
-    //statusBar()->showMessage("Line: " + QString::number(cursorLine));
-
-    /*QAction *foo = new QAction(this);
-    foo->setShortcut(Qt::Key_Q | Qt::CTRL);
-
-    connect(foo, SIGNAL(triggered()), this, SLOT(copy()));
-    this->addAction(foo);*/
-
-    //ignore this part, just experimenting with shortcuts and connect
-
-    /*QShortcut *shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this);
-
-        QObject::connect(shortcut,    &QShortcut::activated,
-                         this,        &MainWindow::test);*/
 }
 
 #ifndef QT_NO_CONTEXTMENU
@@ -151,27 +102,9 @@ void MainWindow::cut()
 {
     infoLabel->setText(tr("Invoked <b>Edit|Cut</b>"));
 
-    /* Siddha 4/4/18:
-     *
-     * Gets the current tab widget and calls its cut action
-     *
-     * Note: You cannot use MainWindow::cut() as the MainWindow does not
-     * have the texteditwidget
-     *
-     * */
-    QTextEdit *cutTextEdit = qobject_cast<QTextEdit *>(tabBar->currentWidget());
+    QPlainTextEdit *cutTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
     cutTextEdit->cut();
 
-    /* Siddha 4/4/18:
-     *
-     * Following code shows line cursor in on in the statusBar at the bottom
-     *
-     * Calculation needs to be adjusted depending on font size
-     *
-     * Make it so that this action is performed based on font size and whenever
-     * the cursor is moved
-     *
-     * */
     int cursorLine  = (cutTextEdit->cursorRect().y() - 4) / 33 + 1 ;
     statusBar()->showMessage("Line: " + QString::number(cursorLine));
 }
