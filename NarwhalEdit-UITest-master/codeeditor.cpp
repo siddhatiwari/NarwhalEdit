@@ -2,6 +2,7 @@
 #include <exception>
 #include <algorithm>
 #include "codeeditor.h"
+#include "mainwindow.h"
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -32,6 +33,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     connect(this, SIGNAL(textChanged()), this, SLOT(rehighlight()));
     connect(this, SIGNAL(textChanged()), this, SLOT(completeText()));
     connect(this, SIGNAL(textChanged()), this, SLOT(findCompletionKeywords()));
+    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(updateLineNumber()));
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
@@ -186,7 +188,7 @@ void CodeEditor::findCompletionKeywords()
 
     QString tempKeyword;
     std::vector<char> excludeChars = {' ', '.', '(', ')', '{', '}',
-                                 '[', ']', '<', '>'};
+                                 '[', ']', '<', '>', '\n', '\t'};
     for (int i = 0; i < currentText.size(); i++) {
         if (std::find(excludeChars.begin(), excludeChars.end(), currentText[i]) != excludeChars.end()) {
             if (!wordList.contains(tempKeyword))
@@ -290,4 +292,15 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
     cr.setWidth(cmpltr->popup()->sizeHintForColumn(0)
                 + cmpltr->popup()->verticalScrollBar()->sizeHint().width());
     cmpltr->complete(cr); // popup it up!
+}
+
+void CodeEditor::updateLineNumber()
+{
+    QString currentText = toPlainText();
+    int newLineCount = 0;
+    for (int i = 0; i < currentText.size(); i++) {
+        if (currentText[i] == '\n')
+            newLineCount++;
+    }
+    qDebug() << newLineCount;
 }

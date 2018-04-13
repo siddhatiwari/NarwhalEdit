@@ -89,6 +89,8 @@ private slots:
 
     void insertCompletion(const QString &completion);
 
+    void updateLineNumber();
+
 };
 
 
