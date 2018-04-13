@@ -11,32 +11,34 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     font.setStyleHint(QFont::Monospace);
     font.setFixedPitch(true);
     font.setPointSize(15);
-    this->setFont(font);
+    setFont(font);
 
     // Sets tab size to 4 spaces
     const int tabSize = 4;
     QFontMetrics metrics(this->font());
     this->setTabStopWidth(tabSize * metrics.width(' '));
 
-    // Autocomplete text
-    autocompleteChars = {
-        {'{', '}'},
-        {'(', ')'},
-        {'[', ']'},
-        {'<', '>'},
-    };
-
     lineNumberArea = new LineNumberArea(this);
-    highlighter = new Highlighter(this->document());
+
+    // Sets up highlighter
+    highlighter = new Highlighter(document());
+
+    QCompleter *cmp = new QCompleter(this->parent());
+    setCompleter(cmp);
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
     connect(this, SIGNAL(textChanged()), this, SLOT(rehighlight()));
     connect(this, SIGNAL(textChanged()), this, SLOT(completeText()));
+    connect(this, SIGNAL(textChanged()), this, SLOT(findCompletionKeywords()));
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+}
+
+CodeEditor::~CodeEditor()
+{
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -96,8 +98,6 @@ void CodeEditor::highlightCurrentLine()
     setExtraSelections(extraSelections);
 }
 
-
-
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(lineNumberArea);
@@ -125,57 +125,169 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 
 void CodeEditor::rehighlight()
 {
-    this->blockSignals(true);
+    blockSignals(true);
 
-    this->highlighter->rehighlight();
+    highlighter->rehighlight();
 
-    this->blockSignals(false);
+    blockSignals(false);
 }
 
 void CodeEditor::completeText()
 {
-    this->blockSignals(true);
+    blockSignals(true);
 
     tryIgnore();
     tryAutocompete();
 
-    this->blockSignals(false);
+    blockSignals(false);
 }
 
-// Autocompletes certain characters if they are entered
 void CodeEditor::tryAutocompete()
 {
-    QString currentText = this->toPlainText();
+    QString currentText = toPlainText();
     if (currentText.size() > 0 ) {
-        int position = this->textCursor().position();
+        int position = textCursor().position();
         QChar previousChar = currentText.at(position - 1);
-        if (autocompleteChars.find(previousChar) != autocompleteChars.end()) {
-            this->insertPlainText(autocompleteChars[previousChar]);
-            this->moveCursor(QTextCursor::Left);
+        if (AUTOCOMPLETE_CHARACTERS.find(previousChar) != AUTOCOMPLETE_CHARACTERS.end()) {
+            insertPlainText(AUTOCOMPLETE_CHARACTERS.at(previousChar));
+            moveCursor(QTextCursor::Left);
         }
     }
 }
 
 void CodeEditor::tryIgnore()
 {
-    QString currentText = this->toPlainText();
-    int position = this->textCursor().position();
+    QString currentText = toPlainText();
+    int position = textCursor().position();
 
     if (position < currentText.size()) {
         QChar previousChar = currentText.at(position - 1);
         QChar nextChar = currentText.at(position);
 
         std::vector<QChar> ignoredChars;
-        ignoredChars.reserve(autocompleteChars.size());
-        for(auto const& imap: autocompleteChars)
+        ignoredChars.reserve(AUTOCOMPLETE_CHARACTERS.size());
+        for(auto const& imap: AUTOCOMPLETE_CHARACTERS)
             ignoredChars.push_back(imap.second);
 
         if(std::find(ignoredChars.begin(), ignoredChars.end(), nextChar) != ignoredChars.end()) {
             if (previousChar == nextChar) {
-                this->moveCursor(QTextCursor::Right);
-                this->textCursor().deletePreviousChar();
+                moveCursor(QTextCursor::Right);
+                textCursor().deletePreviousChar();
             }
         }
+
+    }
+}
+
+void CodeEditor::findCompletionKeywords()
+{
+    QString currentText = toPlainText();
+    QStringList wordList;
+
+    QString tempKeyword;
+    std::vector<char> excludeChars = {' ', '.', '(', ')', '{', '}',
+                                 '[', ']', '<', '>'};
+    for (int i = 0; i < currentText.size(); i++) {
+        if (std::find(excludeChars.begin(), excludeChars.end(), currentText[i]) != excludeChars.end()) {
+            if (!wordList.contains(tempKeyword))
+                wordList << tempKeyword;
+                tempKeyword = "";
+            }
+        else
+            tempKeyword += currentText[i];
     }
 
+    QCompleter *cmp = new QCompleter(wordList, this->parent());
+    setCompleter(cmp);
+}
+
+void CodeEditor::setCompleter(QCompleter *completer)
+{
+    if (cmpltr) {
+        cmpltr->popup()->setMaximumSize(0, 0);
+        QObject::disconnect(cmpltr, 0, this, 0);
+    }
+
+    cmpltr = completer;
+
+    if (!cmpltr)
+        return;
+
+    cmpltr->setWidget(this);
+    cmpltr->setCompletionMode(QCompleter::PopupCompletion);
+    cmpltr->setCaseSensitivity(Qt::CaseInsensitive);
+    cmpltr->setWrapAround(false);
+    connect(cmpltr, SIGNAL(activated(QString)), this, SLOT(insertCompletion(QString)));
+}
+
+void CodeEditor::insertCompletion(const QString &completion)
+{
+    if (cmpltr->widget() != this)
+            return;
+        QTextCursor tc = textCursor();
+        int extra = completion.length() - cmpltr->completionPrefix().length();
+        tc.movePosition(QTextCursor::Left);
+        tc.movePosition(QTextCursor::EndOfWord);
+        tc.insertText(completion.right(extra));
+        setTextCursor(tc);
+}
+
+QString CodeEditor::textUnderCursor() const
+{
+    QTextCursor tc = textCursor();
+    tc.select(QTextCursor::WordUnderCursor);
+    return tc.selectedText();
+}
+
+
+void CodeEditor::focusInEvent(QFocusEvent *e)
+{
+    if (cmpltr)
+        cmpltr->setWidget(this);
+    QPlainTextEdit::focusInEvent(e);
+}
+
+void CodeEditor::keyPressEvent(QKeyEvent *e)
+{
+    if (cmpltr && cmpltr->popup()->isVisible()) {
+        // The following keys are forwarded by the completer to the widget
+       switch (e->key()) {
+       case Qt::Key_Enter:
+       case Qt::Key_Return:
+       case Qt::Key_Escape:
+       case Qt::Key_Tab:
+       case Qt::Key_Backtab:
+            e->ignore();
+            return; // let the completer do default behavior
+       default:
+           break;
+       }
+    }
+
+    bool isShortcut = ((e->modifiers() & Qt::ControlModifier) && e->key() == Qt::Key_D); // CTRL+E
+    if (!cmpltr || !isShortcut) // do not process the shortcut when we have a completer
+        QPlainTextEdit::keyPressEvent(e);
+
+    const bool ctrlOrShift = e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
+    if (!cmpltr || (ctrlOrShift && e->text().isEmpty()))
+        return;
+
+    static QString eow("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="); // end of word
+    bool hasModifier = (e->modifiers() != Qt::NoModifier) && !ctrlOrShift;
+    QString completionPrefix = textUnderCursor();
+
+    if (!isShortcut && (hasModifier || e->text().isEmpty()|| completionPrefix.length() < 1
+                      || eow.contains(e->text().right(1)))) {
+        cmpltr->popup()->hide();
+        return;
+    }
+
+    if (completionPrefix != cmpltr->completionPrefix()) {
+        cmpltr->setCompletionPrefix(completionPrefix);
+        cmpltr->popup()->setCurrentIndex(cmpltr->completionModel()->index(0, 0));
+    }
+    QRect cr = cursorRect();
+    cr.setWidth(cmpltr->popup()->sizeHintForColumn(0)
+                + cmpltr->popup()->verticalScrollBar()->sizeHint().width());
+    cmpltr->complete(cr); // popup it up!
 }

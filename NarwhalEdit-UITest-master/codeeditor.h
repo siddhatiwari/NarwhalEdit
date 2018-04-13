@@ -3,6 +3,7 @@
 
 #include <QPlainTextEdit>
 #include <QObject>
+#include <QCompleter>
 #include "highlighter.h"
 
 class QPaintEvent;
@@ -17,17 +18,28 @@ class CodeEditor : public QPlainTextEdit
 
 public:
     CodeEditor(QWidget *parent = 0);
+    ~CodeEditor();
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+    void setCompleter(QCompleter *c);
+    QCompleter *completer() const;
 
 private:
     QWidget *lineNumberArea;
     Highlighter *highlighter;
-    std::map<QChar, QChar> autocompleteChars;
-    bool autocompleting;
+    QStringList keywords;
+    const std::map<QChar, QChar> AUTOCOMPLETE_CHARACTERS = {
+        {'{', '}'},
+        {'(', ')'},
+        {'[', ']'},
+    };
+    QString textUnderCursor() const;
+    QCompleter *cmpltr;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    void keyPressEvent(QKeyEvent *e) override;
+    void focusInEvent(QFocusEvent *e) override;
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
@@ -52,6 +64,15 @@ private slots:
     void rehighlight();
 
     /**
+     * Completes the text based on prior input
+     *
+     * @brief Completes the text
+     * @param none
+     * @return void
+     */
+    void completeText();
+
+    /**
      * Tries to autocomplete certain characters that are typed
      *
      * @brief Try to autocomplete character
@@ -60,9 +81,13 @@ private slots:
      */
     void tryAutocompete();
 
-    void completeText();
+
 
     void tryIgnore();
+
+    void findCompletionKeywords();
+
+    void insertCompletion(const QString &completion);
 
 };
 
