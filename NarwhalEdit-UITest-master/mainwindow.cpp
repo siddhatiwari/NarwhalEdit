@@ -1,6 +1,5 @@
 #include <QtWidgets>
 #include <QTextCursor>
-#include "mainwindow.h"
 #include <QDebug>
 #include <QShortcut>
 #include <QKeySequence>
@@ -10,6 +9,8 @@
 #include <QMouseEvent>
 #include <QGraphicsRectItem>
 #include <QRect>
+#include "mainwindow.h"
+#include "codeeditor.h"
 
 MainWindow::MainWindow()
 {
@@ -34,7 +35,7 @@ MainWindow::MainWindow()
     createTabBar();
 
     layout->addWidget(tabBar);
-    tabBar->createEditorTab();
+    createTab();
 
     QString message = tr("A context menu is available by right-clicking");
     statusBar()->showMessage(message);
@@ -65,8 +66,14 @@ void MainWindow::test()
 void MainWindow::newFile()
 {
     infoLabel->setText(tr("Invoked <b>File|New</b>"));
-    tabBar->createEditorTab();
+    createTab();
+}
 
+void MainWindow::createTab()
+{
+    CodeEditor *codeEditor = new CodeEditor();
+    connect(codeEditor, SIGNAL(updateLineNumber(int)), this, SLOT(updateLineNumber(int)));
+    tabBar->createEditorTab(codeEditor);
 }
 
 void MainWindow::open()
@@ -194,6 +201,11 @@ void MainWindow::about()
 void MainWindow::aboutQt()
 {
     infoLabel->setText(tr("Invoked <b>Help|About Qt</b>"));
+}
+
+void MainWindow::updateLineNumber(int lineNumber)
+{
+    statusBar()->showMessage("Line: " + QString::number(lineNumber));
 }
 
 void MainWindow::createActions()

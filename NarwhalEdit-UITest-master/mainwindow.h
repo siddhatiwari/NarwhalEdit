@@ -46,6 +46,7 @@ private slots:
     void setParagraphSpacing();
     void about();
     void aboutQt();
+    void updateLineNumber(int lineNumber);
 
 private:
     void createActions();
@@ -53,6 +54,7 @@ private:
     void createTabBar();
     void createTextEditor();
     void createSideBar();
+    void createTab();
 
     TabBar *tabBar;
     QMenu *fileMenu;

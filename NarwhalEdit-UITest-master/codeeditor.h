@@ -41,6 +41,9 @@ protected:
     void keyPressEvent(QKeyEvent *e) override;
     void focusInEvent(QFocusEvent *e) override;
 
+signals:
+    void updateLineNumber(int lineNumber);
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
 
@@ -89,7 +92,7 @@ private slots:
 
     void insertCompletion(const QString &completion);
 
-    void updateLineNumber();
+    void calculateNewLineNumber();
 
 };
 

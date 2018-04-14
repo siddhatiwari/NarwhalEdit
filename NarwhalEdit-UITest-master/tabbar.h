@@ -3,14 +3,16 @@
 
 #include <QWidget>
 #include <QTabWidget>
+#include "codeeditor.h"
 
 class TabBar : public QTabWidget
 {
 
 public:
     TabBar();
-    //virtual ~TabBar();
-    void createEditorTab();
+    ~TabBar();
+    void createEditorTab(CodeEditor *codeEditor);
+
 private slots:
     void handleCloseRequested(int tabIndex);
 };

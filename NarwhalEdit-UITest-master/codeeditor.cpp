@@ -24,6 +24,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     // Sets up highlighter
     highlighter = new Highlighter(document());
 
+    // Sets up autocompleter
     QCompleter *cmp = new QCompleter(this->parent());
     setCompleter(cmp);
 
@@ -33,7 +34,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     connect(this, SIGNAL(textChanged()), this, SLOT(rehighlight()));
     connect(this, SIGNAL(textChanged()), this, SLOT(completeText()));
     connect(this, SIGNAL(textChanged()), this, SLOT(findCompletionKeywords()));
-    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(updateLineNumber()));
+    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(calculateNewLineNumber()));
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
@@ -252,7 +253,6 @@ void CodeEditor::focusInEvent(QFocusEvent *e)
 void CodeEditor::keyPressEvent(QKeyEvent *e)
 {
     if (cmpltr && cmpltr->popup()->isVisible()) {
-        // The following keys are forwarded by the completer to the widget
        switch (e->key()) {
        case Qt::Key_Enter:
        case Qt::Key_Return:
@@ -260,7 +260,7 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
        case Qt::Key_Tab:
        case Qt::Key_Backtab:
             e->ignore();
-            return; // let the completer do default behavior
+            return;
        default:
            break;
        }
@@ -294,7 +294,7 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
     cmpltr->complete(cr); // popup it up!
 }
 
-void CodeEditor::updateLineNumber()
+void CodeEditor::calculateNewLineNumber()
 {
     QString currentText = toPlainText();
     int newLineCount = 0;
@@ -302,5 +302,6 @@ void CodeEditor::updateLineNumber()
         if (currentText[i] == '\n')
             newLineCount++;
     }
-    qDebug() << newLineCount;
+
+    emit updateLineNumber(newLineCount);
 }

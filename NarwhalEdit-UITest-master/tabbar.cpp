@@ -8,16 +8,17 @@
 
 TabBar::TabBar()
 {
-    //this->tabBar()->tabButton(0, QTabBar::LeftSide)->resize(0, 0);
     this->setTabsClosable(true);
     connect(this, &TabBar::tabCloseRequested, this, &TabBar::handleCloseRequested);
 }
 
-void TabBar::createEditorTab()
+TabBar::~TabBar()
 {
-    CodeEditor *textEdit = new CodeEditor();
-    this->addTab(textEdit, "New tab");
+}
 
+void TabBar::createEditorTab(CodeEditor *codeEditor)
+{
+    this->addTab(codeEditor, "New tab");
 }
 
 void TabBar::handleCloseRequested(int tabIndex)
