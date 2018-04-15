@@ -68,6 +68,8 @@ void MainWindow::createTab(CodeEditor *codeEditor, QString title)
 
     tabBar->createEditorTab(codeEditor, title);
     connect(codeEditor, SIGNAL(updateLineNumber(int)), this, SLOT(updateLineNumber(int)));
+    int lastTabIndex = tabBar->count() - 1;
+    tabBar->setCurrentIndex(lastTabIndex);
 
     qDebug() << "2";
 }

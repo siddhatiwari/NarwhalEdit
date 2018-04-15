@@ -42,3 +42,6 @@ FORMS += \
 
 DISTFILES += \
     TabBarStyleSheet.qss
+
+RESOURCES += \
+    resources.qrc
