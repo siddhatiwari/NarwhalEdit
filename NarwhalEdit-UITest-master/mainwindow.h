@@ -26,7 +26,6 @@ protected:
 #endif // QT_NO_CONTEXTMENU
 
 private slots:
-    void test();
     void newFile();
     void open();
     void save();
@@ -36,17 +35,12 @@ private slots:
     void cut();
     void copy();
     void paste();
-    void bold();
-    void italic();
-    void leftAlign();
-    void rightAlign();
-    void justify();
-    void center();
     void setLineSpacing();
     void setParagraphSpacing();
     void about();
     void aboutQt();
     void updateLineNumber(int lineNumber);
+    void startAction();
 
 private:
     void createActions();
@@ -54,7 +48,7 @@ private:
     void createTabBar();
     void createTextEditor();
     void createSideBar();
-    void createTab();
+    void createTab(CodeEditor *codeEditor, QString title = "New Tab");
 
     TabBar *tabBar;
     QMenu *fileMenu;
@@ -72,12 +66,7 @@ private:
     QAction *cutAct;
     QAction *copyAct;
     QAction *pasteAct;
-    QAction *boldAct;
-    QAction *italicAct;
-    QAction *leftAlignAct;
-    QAction *rightAlignAct;
-    QAction *justifyAct;
-    QAction *centerAct;
+    QAction *startAct;
     QAction *setLineSpacingAct;
     QAction *setParagraphSpacingAct;
     QAction *aboutAct;

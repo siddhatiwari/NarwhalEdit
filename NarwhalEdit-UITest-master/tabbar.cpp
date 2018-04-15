@@ -16,9 +16,9 @@ TabBar::~TabBar()
 {
 }
 
-void TabBar::createEditorTab(CodeEditor *codeEditor)
+void TabBar::createEditorTab(CodeEditor *codeEditor, QString title)
 {
-    this->addTab(codeEditor, "New tab");
+    this->addTab(codeEditor, title);
 }
 
 void TabBar::handleCloseRequested(int tabIndex)

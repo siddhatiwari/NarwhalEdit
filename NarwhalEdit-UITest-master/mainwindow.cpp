@@ -9,6 +9,7 @@
 #include <QMouseEvent>
 #include <QGraphicsRectItem>
 #include <QRect>
+#include <QFile>
 #include "mainwindow.h"
 #include "codeeditor.h"
 
@@ -35,10 +36,12 @@ MainWindow::MainWindow()
     createTabBar();
 
     layout->addWidget(tabBar);
-    createTab();
+    CodeEditor *codeEditor = new CodeEditor();
+    createTab(codeEditor);
 
     QString message = tr("A context menu is available by right-clicking");
-    statusBar()->showMessage(message);
+
+    statusBar()->showMessage("Line: 1");
 
     setWindowTitle(tr("Menus"));
     setMinimumSize(160, 160);
@@ -53,37 +56,101 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     menu.addAction(cutAct);
     menu.addAction(copyAct);
     menu.addAction(pasteAct);
+    menu.addAction(startAct);
     menu.exec(event->globalPos());
 }
 #endif // QT_NO_CONTEXTMENU
 
 
-void MainWindow::test()
+void MainWindow::createTab(CodeEditor *codeEditor, QString title)
 {
-    qDebug() << "Ctrl+Q pressed.";
+    qDebug() << "1";
+
+    tabBar->createEditorTab(codeEditor, title);
+    connect(codeEditor, SIGNAL(updateLineNumber(int)), this, SLOT(updateLineNumber(int)));
+
+    qDebug() << "2";
 }
 
 void MainWindow::newFile()
 {
     infoLabel->setText(tr("Invoked <b>File|New</b>"));
-    createTab();
-}
 
-void MainWindow::createTab()
-{
+    qDebug() << "1";
+
     CodeEditor *codeEditor = new CodeEditor();
-    connect(codeEditor, SIGNAL(updateLineNumber(int)), this, SLOT(updateLineNumber(int)));
-    tabBar->createEditorTab(codeEditor);
+    createTab(codeEditor);
+
+    qDebug() << "2";
 }
 
 void MainWindow::open()
 {
     infoLabel->setText(tr("Invoked <b>File|Open</b>"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), tr("Text File (*.txt)"));
+
+    if (fileName.isEmpty())
+        return;
+    else {
+
+        QFile file(fileName);
+        if(!file.open(QIODevice::ReadOnly)) {
+            QMessageBox::information(this, tr("Unable to open file"), file.errorString());
+            return;
+        }
+
+        QDataStream in(&file);
+        QString text;
+
+        in >> text;
+
+        file.flush();
+        file.close();
+
+        qDebug() << "1";
+
+        CodeEditor *codeEditor = new CodeEditor();
+        codeEditor->document()->setPlainText(text);
+
+        QFileInfo fileInfo(fileName);
+        createTab(codeEditor, fileInfo.fileName());
+
+        qDebug() << "2";
+
+    }
 }
 
 void MainWindow::save()
 {
     infoLabel->setText(tr("Invoked <b>File|Save</b>"));
+
+    if (tabBar->count() > 0) {
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("Text (*.txt);;All Files (*)"));
+        if (fileName.isEmpty())
+            return;
+        else {
+
+            QFile file(fileName);
+            if (!file.open(QIODevice::WriteOnly)) {
+                QMessageBox::information(this, tr("Unable to open file"), file.errorString());
+                return;
+            }
+
+            QDataStream out(&file);
+            QPlainTextEdit *currentEditor = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
+
+            out << currentEditor->toPlainText();
+
+            file.flush();
+            file.close();
+
+            QFileInfo fileInfo(fileName);
+            int currentIndex = tabBar->currentIndex();
+            tabBar->setTabText(currentIndex, fileInfo.fileName());
+
+        }
+
+    }
 }
 
 void MainWindow::print()
@@ -94,14 +161,14 @@ void MainWindow::print()
 void MainWindow::undo()
 {
     infoLabel->setText(tr("Invoked <b>Edit|Undo</b>"));
-    QTextEdit *undoTextEdit = qobject_cast<QTextEdit *>(tabBar->currentWidget());
+    QPlainTextEdit *undoTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
     undoTextEdit->undo();
 }
 
 void MainWindow::redo()
 {
     infoLabel->setText(tr("Invoked <b>Edit|Redo</b>"));
-    QTextEdit *redoTextEdit = qobject_cast<QTextEdit *>(tabBar->currentWidget());
+    QPlainTextEdit *redoTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
     redoTextEdit->redo();
 }
 
@@ -111,73 +178,20 @@ void MainWindow::cut()
 
     QPlainTextEdit *cutTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
     cutTextEdit->cut();
-
-    int cursorLine  = (cutTextEdit->cursorRect().y() - 4) / 33 + 1 ;
-    statusBar()->showMessage("Line: " + QString::number(cursorLine));
 }
 
 void MainWindow::copy()
 {
     infoLabel->setText(tr("Invoked <b>Edit|Copy</b>"));
-    QTextEdit *copyTextEdit = qobject_cast<QTextEdit *>(tabBar->currentWidget());
+    QPlainTextEdit *copyTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
     copyTextEdit->copy();
 }
 
 void MainWindow::paste()
 {
     infoLabel->setText(tr("Invoked <b>Edit|Paste</b>"));
-    QTextEdit *pasteTextEdit = qobject_cast<QTextEdit *>(tabBar->currentWidget());
+    QPlainTextEdit *pasteTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
     pasteTextEdit->paste();
-}
-
-void MainWindow::bold()
-{
-    infoLabel->setText(tr("Invoked <b>Edit|Format|Bold</b>"));
-    QTextEdit *boldTextEdit = qobject_cast<QTextEdit *>(tabBar->currentWidget());
-    if(boldTextEdit->QTextEdit::fontWeight()>60)
-    {
-        boldTextEdit->setFontWeight(50);
-    }
-    else
-    {
-    boldTextEdit->setFontWeight(75);
-    }
-}
-
-void MainWindow::italic()
-{
-    infoLabel->setText(tr("Invoked <b>Edit|Format|Italic</b>"));
-    QTextEdit *italicTextEdit = qobject_cast<QTextEdit *>(tabBar->currentWidget());
-    if(italicTextEdit->QTextEdit::fontItalic()==true)
-    {
-        italicTextEdit->setFontItalic(false);
-    }
-    else
-    {
-        italicTextEdit->setFontItalic(true);
-    }
-}
-
-void MainWindow::leftAlign()
-{
-    infoLabel->setText(tr("Invoked <b>Edit|Format|Left Align</b>"));
-    //QTextEdit *leftAlignTextEdit = qobject_cast<QTextEdit *>(tabBar->currentWidget());
-    //leftAlignTextEdit->QTextEdit::AlignLeft
-}
-
-void MainWindow::rightAlign()
-{
-    infoLabel->setText(tr("Invoked <b>Edit|Format|Right Align</b>"));
-}
-
-void MainWindow::justify()
-{
-    infoLabel->setText(tr("Invoked <b>Edit|Format|Justify</b>"));
-}
-
-void MainWindow::center()
-{
-    infoLabel->setText(tr("Invoked <b>Edit|Format|Center</b>"));
 }
 
 void MainWindow::setLineSpacing()
@@ -230,7 +244,7 @@ void MainWindow::createActions()
     printAct->setStatusTip(tr("Print the document"));
     connect(printAct, &QAction::triggered, this, &MainWindow::print);
 
-    exitAct = new QAction(tr("E&xit"), this);
+    exitAct = new QAction(tr("&Exit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, &QAction::triggered, this, &QWidget::close);
@@ -250,15 +264,6 @@ void MainWindow::createActions()
     cutAct->setStatusTip(tr("Cut the current selection's contents to the "
                             "clipboard"));
     connect(cutAct, &QAction::triggered, this, &MainWindow::cut);
-    //cutAct->addAction(tr("&Cut...", this, SLOT(open()), QKeySequence(tr("Ctrl+X"))));
-
-    //QShortcut *shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_X), this);
-    //connect(cutAct, &QAction::triggered, shortcut, &QShortcut::activated);
-    //connect(shortcut, &QShortcut::activated, cutAct, &QAction::triggered);
-
-    //My attempt at fixing the menu items. My idea was to use the shortcuts class to assign each act
-    //to its respective shortcut (ie cut to ctrl-x), but Im not sure if this is possible.
-
 
     copyAct = new QAction(tr("&Copy"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
@@ -272,25 +277,9 @@ void MainWindow::createActions()
                               "selection"));
     connect(pasteAct, &QAction::triggered, this, &MainWindow::paste);
 
-    boldAct = new QAction(tr("&Bold"), this);
-    boldAct->setCheckable(true);
-    boldAct->setShortcut(QKeySequence::Bold);
-    boldAct->setStatusTip(tr("Make the text bold"));
-    connect(boldAct, &QAction::triggered, this, &MainWindow::bold);
-
-    QFont boldFont = boldAct->font();
-    boldFont.setBold(true);
-    boldAct->setFont(boldFont);
-
-    italicAct = new QAction(tr("&Italic"), this);
-    italicAct->setCheckable(true);
-    italicAct->setShortcut(QKeySequence::Italic);
-    italicAct->setStatusTip(tr("Make the text italic"));
-    connect(italicAct, &QAction::triggered, this, &MainWindow::italic);
-
-    QFont italicFont = italicAct->font();
-    italicFont.setItalic(true);
-    italicAct->setFont(italicFont);
+    startAct = new QAction(tr("&Start"), this);
+    startAct->setStatusTip(tr("Start a server so others can edit the current file"));
+    connect(startAct, SIGNAL(triggered(bool)), this, SLOT(startAction()));
 
     setLineSpacingAct = new QAction(tr("Set &Line Spacing..."), this);
     setLineSpacingAct->setStatusTip(tr("Change the gap between the lines of a "
@@ -310,37 +299,6 @@ void MainWindow::createActions()
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
     connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
     connect(aboutQtAct, &QAction::triggered, this, &MainWindow::aboutQt);
-
-    leftAlignAct = new QAction(tr("&Left Align"), this);
-    leftAlignAct->setCheckable(true);
-    leftAlignAct->setShortcut(tr("Ctrl+L"));
-    leftAlignAct->setStatusTip(tr("Left align the selected text"));
-    connect(leftAlignAct, &QAction::triggered, this, &MainWindow::leftAlign);
-
-    rightAlignAct = new QAction(tr("&Right Align"), this);
-    rightAlignAct->setCheckable(true);
-    rightAlignAct->setShortcut(tr("Ctrl+R"));
-    rightAlignAct->setStatusTip(tr("Right align the selected text"));
-    connect(rightAlignAct, &QAction::triggered, this, &MainWindow::rightAlign);
-
-    justifyAct = new QAction(tr("&Justify"), this);
-    justifyAct->setCheckable(true);
-    justifyAct->setShortcut(tr("Ctrl+J"));
-    justifyAct->setStatusTip(tr("Justify the selected text"));
-    connect(justifyAct, &QAction::triggered, this, &MainWindow::justify);
-
-    centerAct = new QAction(tr("&Center"), this);
-    centerAct->setCheckable(true);
-    centerAct->setShortcut(tr("Ctrl+E"));
-    centerAct->setStatusTip(tr("Center the selected text"));
-    connect(centerAct, &QAction::triggered, this, &MainWindow::center);
-
-    alignmentGroup = new QActionGroup(this);
-    alignmentGroup->addAction(leftAlignAct);
-    alignmentGroup->addAction(rightAlignAct);
-    alignmentGroup->addAction(justifyAct);
-    alignmentGroup->addAction(centerAct);
-    leftAlignAct->setChecked(true);
 }
 
 void MainWindow::createMenus()
@@ -367,13 +325,7 @@ void MainWindow::createMenus()
     helpMenu->addAction(aboutQtAct);
 
     formatMenu = editMenu->addMenu(tr("&Format"));
-    formatMenu->addAction(boldAct);
-    formatMenu->addAction(italicAct);
     formatMenu->addSeparator()->setText(tr("Alignment"));
-    formatMenu->addAction(leftAlignAct);
-    formatMenu->addAction(rightAlignAct);
-    formatMenu->addAction(justifyAct);
-    formatMenu->addAction(centerAct);
     formatMenu->addSeparator();
     formatMenu->addAction(setLineSpacingAct);
     formatMenu->addAction(setParagraphSpacingAct);
@@ -382,4 +334,9 @@ void MainWindow::createMenus()
 void MainWindow::createTabBar()
 {
     tabBar = new TabBar();
+}
+
+void MainWindow::startAction()
+{
+
 }

@@ -11,7 +11,7 @@ class TabBar : public QTabWidget
 public:
     TabBar();
     ~TabBar();
-    void createEditorTab(CodeEditor *codeEditor);
+    void createEditorTab(CodeEditor *codeEditor, QString title = "New Tab");
 
 private slots:
     void handleCloseRequested(int tabIndex);

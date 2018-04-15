@@ -6,6 +6,15 @@
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
+    setupEditor();
+}
+
+CodeEditor::~CodeEditor()
+{
+}
+
+void CodeEditor::setupEditor()
+{
     // Sets tab
     QFont font;
     font.setFamily("Courier");
@@ -38,10 +47,6 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
-}
-
-CodeEditor::~CodeEditor()
-{
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -266,15 +271,15 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
        }
     }
 
-    bool isShortcut = ((e->modifiers() & Qt::ControlModifier) && e->key() == Qt::Key_D); // CTRL+E
-    if (!cmpltr || !isShortcut) // do not process the shortcut when we have a completer
+    bool isShortcut = ((e->modifiers() & Qt::ControlModifier) && e->key() == Qt::Key_D);
+    if (!cmpltr || !isShortcut)
         QPlainTextEdit::keyPressEvent(e);
 
     const bool ctrlOrShift = e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
     if (!cmpltr || (ctrlOrShift && e->text().isEmpty()))
         return;
 
-    static QString eow("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="); // end of word
+    static QString eow("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-=");
     bool hasModifier = (e->modifiers() != Qt::NoModifier) && !ctrlOrShift;
     QString completionPrefix = textUnderCursor();
 
@@ -291,7 +296,7 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
     QRect cr = cursorRect();
     cr.setWidth(cmpltr->popup()->sizeHintForColumn(0)
                 + cmpltr->popup()->verticalScrollBar()->sizeHint().width());
-    cmpltr->complete(cr); // popup it up!
+    cmpltr->complete(cr);
 }
 
 void CodeEditor::calculateNewLineNumber()
@@ -303,5 +308,5 @@ void CodeEditor::calculateNewLineNumber()
             newLineCount++;
     }
 
-    emit updateLineNumber(newLineCount);
+    emit updateLineNumber(newLineCount + 1);
 }

@@ -25,6 +25,7 @@ public:
     QCompleter *completer() const;
 
 private:
+    void setupEditor();
     QWidget *lineNumberArea;
     Highlighter *highlighter;
     QStringList keywords;
