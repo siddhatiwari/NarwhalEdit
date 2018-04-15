@@ -23,7 +23,7 @@ MainWindow::MainWindow()
 
     infoLabel = new QLabel(tr("<i>Choose a menu option, or right-click to "
                               "invoke a context menu</i>"));
-    infoLabel->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+    infoLabel->setFrameStyle(QFrame::StyledPanel | QFrame::Box);
     infoLabel->setAlignment(Qt::AlignCenter);
 
     QVBoxLayout *layout = new QVBoxLayout;
@@ -39,13 +39,12 @@ MainWindow::MainWindow()
     CodeEditor *codeEditor = new CodeEditor();
     createTab(codeEditor);
 
-    QString message = tr("A context menu is available by right-clicking");
-
     statusBar()->showMessage("Line: 1");
 
     setWindowTitle(tr("Menus"));
     setMinimumSize(160, 160);
-    resize(480, 320);
+    QRect screen = QApplication::desktop()->screenGeometry();
+    resize(screen.width(), screen.height());
 
 }
 
@@ -61,17 +60,14 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 }
 #endif // QT_NO_CONTEXTMENU
 
-
 void MainWindow::createTab(CodeEditor *codeEditor, QString title)
 {
-    qDebug() << "1";
 
     tabBar->createEditorTab(codeEditor, title);
     connect(codeEditor, SIGNAL(updateLineNumber(int)), this, SLOT(updateLineNumber(int)));
     int lastTabIndex = tabBar->count() - 1;
     tabBar->setCurrentIndex(lastTabIndex);
 
-    qDebug() << "2";
 }
 
 void MainWindow::newFile()
@@ -104,12 +100,17 @@ void MainWindow::open()
         QDataStream in(&file);
         QString text;
 
-        in >> text;
+        //in >> text >> s;
+        qDebug() << text;
 
         file.flush();
         file.close();
 
         qDebug() << "1";
+
+        int currentTabIndex = tabBar->currentIndex();
+        if (currentEditor->document()->isEmpty() && tabBar->tabText(currentTabIndex) == "New Tab")
+            tabBar->removeTab(currentTabIndex);
 
         CodeEditor *codeEditor = new CodeEditor();
         codeEditor->document()->setPlainText(text);
@@ -163,37 +164,31 @@ void MainWindow::print()
 void MainWindow::undo()
 {
     infoLabel->setText(tr("Invoked <b>Edit|Undo</b>"));
-    QPlainTextEdit *undoTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
-    undoTextEdit->undo();
+    currentEditor->undo();
 }
 
 void MainWindow::redo()
 {
     infoLabel->setText(tr("Invoked <b>Edit|Redo</b>"));
-    QPlainTextEdit *redoTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
-    redoTextEdit->redo();
+    currentEditor->redo();
 }
 
 void MainWindow::cut()
 {
     infoLabel->setText(tr("Invoked <b>Edit|Cut</b>"));
-
-    QPlainTextEdit *cutTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
-    cutTextEdit->cut();
+    currentEditor->cut();
 }
 
 void MainWindow::copy()
 {
     infoLabel->setText(tr("Invoked <b>Edit|Copy</b>"));
-    QPlainTextEdit *copyTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
-    copyTextEdit->copy();
+    currentEditor->copy();
 }
 
 void MainWindow::paste()
 {
     infoLabel->setText(tr("Invoked <b>Edit|Paste</b>"));
-    QPlainTextEdit *pasteTextEdit = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
-    pasteTextEdit->paste();
+    currentEditor->paste();
 }
 
 void MainWindow::setLineSpacing()
@@ -210,8 +205,7 @@ void MainWindow::about()
 {
     infoLabel->setText(tr("Invoked <b>Help|About</b>"));
     QMessageBox::about(this, tr("About Menu"),
-            tr("The <b>Menu</b> example shows how to create "
-               "menu-bar menus and context menus."));
+            tr("NarwhalEdit is a multi-user text editor"));
 }
 
 void MainWindow::aboutQt()
@@ -283,15 +277,14 @@ void MainWindow::createActions()
     startAct->setStatusTip(tr("Start a server so others can edit the current file"));
     connect(startAct, SIGNAL(triggered(bool)), this, SLOT(startAction()));
 
+    connectAct = new QAction(tr("&Connect"), this);
+    connectAct->setStatusTip(tr("Connect to an editor server"));
+    connect(connectAct, SIGNAL(triggered(bool)), this, SLOT(connectAction()));
+
     setLineSpacingAct = new QAction(tr("Set &Line Spacing..."), this);
     setLineSpacingAct->setStatusTip(tr("Change the gap between the lines of a "
                                        "paragraph"));
     connect(setLineSpacingAct, &QAction::triggered, this, &MainWindow::setLineSpacing);
-
-    setParagraphSpacingAct = new QAction(tr("Set &Paragraph Spacing..."), this);
-    setParagraphSpacingAct->setStatusTip(tr("Change the gap between paragraphs"));
-    connect(setParagraphSpacingAct, &QAction::triggered,
-            this, &MainWindow::setParagraphSpacing);
 
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
@@ -309,6 +302,8 @@ void MainWindow::createMenus()
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
+    fileMenu->addAction(startAct);
+    fileMenu->addAction(connectAct);
     fileMenu->addAction(printAct);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
@@ -327,18 +322,32 @@ void MainWindow::createMenus()
     helpMenu->addAction(aboutQtAct);
 
     formatMenu = editMenu->addMenu(tr("&Format"));
-    formatMenu->addSeparator()->setText(tr("Alignment"));
-    formatMenu->addSeparator();
     formatMenu->addAction(setLineSpacingAct);
-    formatMenu->addAction(setParagraphSpacingAct);
 }
 
 void MainWindow::createTabBar()
 {
     tabBar = new TabBar();
+    connect(tabBar, SIGNAL(currentChanged(int)), this, SLOT(updateCurrentTab()));
+}
+
+void MainWindow::updateCurrentTab()
+{
+    currentEditor = qobject_cast<CodeEditor *>(tabBar->currentWidget());
 }
 
 void MainWindow::startAction()
 {
+    currentEditor->editorServer->startServer();
+    currentEditor->editorSocket->connectToHost(QHostAddress::Any, 2000);
+    if (!currentEditor->editorSocket->waitForConnected())
+        QMessageBox::information(this, tr("Unable to connect to host"), QString(""));
+}
 
+void MainWindow::connectAction()
+{
+    qDebug() << "trying";
+    currentEditor->editorSocket->connectToHost(QHostAddress::Any, 2000);
+    if (!currentEditor->editorSocket->waitForConnected())
+        QMessageBox::information(this, tr("Unable to connect to host"), QString(""));
 }

@@ -25,5 +25,3 @@ void TabBar::handleCloseRequested(int tabIndex)
 {
     this->removeTab(tabIndex);
 }
-
-

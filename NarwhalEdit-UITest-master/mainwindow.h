@@ -7,7 +7,6 @@
 #include "tabbar.h"
 #include <QTextCursor>
 
-
 class QAction;
 class QActionGroup;
 class QLabel;
@@ -41,6 +40,8 @@ private slots:
     void aboutQt();
     void updateLineNumber(int lineNumber);
     void startAction();
+    void connectAction();
+    void updateCurrentTab();
 
 private:
     void createActions();
@@ -51,6 +52,7 @@ private:
     void createTab(CodeEditor *codeEditor, QString title = "New Tab");
 
     TabBar *tabBar;
+    CodeEditor *currentEditor;
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *formatMenu;
@@ -67,11 +69,12 @@ private:
     QAction *copyAct;
     QAction *pasteAct;
     QAction *startAct;
+    QAction *connectAct;
     QAction *setLineSpacingAct;
-    QAction *setParagraphSpacingAct;
     QAction *aboutAct;
     QAction *aboutQtAct;
     QLabel *infoLabel;
+
 };
 
 #endif

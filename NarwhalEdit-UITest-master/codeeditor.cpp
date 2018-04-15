@@ -1,3 +1,4 @@
+
 #include <QtWidgets>
 #include <exception>
 #include <algorithm>
@@ -36,6 +37,12 @@ void CodeEditor::setupEditor()
     // Sets up autocompleter
     QCompleter *cmp = new QCompleter(this->parent());
     setCompleter(cmp);
+
+    editorServer = new Server();
+    connect(editorServer, SIGNAL(dataReceived(QByteArray)), this, SLOT(sendData(QByteArray)));
+
+    editorSocket = new QTcpSocket();
+    connect(editorSocket, SIGNAL(readyRead()), this, SLOT(updateText()));
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
@@ -146,6 +153,7 @@ void CodeEditor::completeText()
 
     tryIgnore();
     tryAutocompete();
+    writeData();
 
     blockSignals(false);
 }
@@ -185,6 +193,49 @@ void CodeEditor::tryIgnore()
         }
 
     }
+}
+
+static inline QByteArray IntToArray(qint32 source);
+
+bool CodeEditor::writeData()
+{
+    if (editorSocket->state() == QAbstractSocket::ConnectedState) {
+        qDebug() << "writing data";
+        QString currentText = toPlainText();
+        QByteArray data = currentText.toLocal8Bit();
+        //editorSocket->write(IntToArray(data).size());
+        editorSocket->write(data);
+        return editorSocket->waitForBytesWritten();
+    }
+    else
+        return false;
+}
+
+void CodeEditor::sendData(QByteArray data)
+{
+    if (editorServer->isListening()) {
+        for (int i = 0; i < editorServer->sockets.size(); i++) {
+            QTcpSocket *socket = editorServer->sockets.at(i);
+            socket->write(data);
+        }
+    }
+}
+
+void CodeEditor::updateText()
+{
+    QString updatedText = editorSocket->readAll();
+    blockSignals(true);
+    document()->setPlainText(updatedText);
+    blockSignals(false);
+}
+
+
+QByteArray IntToArray(qint32 source)
+{
+    QByteArray temp;
+    QDataStream data(&temp, QIODevice::ReadWrite);
+    data << source;
+    return temp;
 }
 
 void CodeEditor::findCompletionKeywords()

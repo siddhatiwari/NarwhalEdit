@@ -4,7 +4,9 @@
 #include <QPlainTextEdit>
 #include <QObject>
 #include <QCompleter>
+#include <QTcpSocket>
 #include "highlighter.h"
+#include "server.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -23,6 +25,8 @@ public:
     int lineNumberAreaWidth();
     void setCompleter(QCompleter *c);
     QCompleter *completer() const;
+    Server *editorServer;
+    QTcpSocket *editorSocket;
 
 private:
     void setupEditor();
@@ -85,9 +89,13 @@ private slots:
      */
     void tryAutocompete();
 
-
-
     void tryIgnore();
+
+    bool writeData();
+
+    void sendData(QByteArray data);
+
+    void updateText();
 
     void findCompletionKeywords();
 
