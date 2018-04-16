@@ -11,6 +11,7 @@
 #include <QGraphicsRectItem>
 #include <QRect>
 #include <QFile>
+#include <QBoxLayout>
 #include "mainwindow.h"
 #include "codeeditor.h"
 
@@ -33,14 +34,30 @@ MainWindow::MainWindow()
     widget->setLayout(layout);
 
     createActions();
+
+    lineNumberLabel = new QLabel("Line: 1");
+    highlightingButton = new QToolButton();
+    highlightingButton->setPopupMode(QToolButton::MenuButtonPopup);
+    QMenu *syntaxMenu = new QMenu();
+    for (int i = 0; i < syntaxHighlightingActs.size(); i++) {
+        QAction *currentAction = syntaxHighlightingActs.at(i);
+        if (i == 0)
+            highlightingButton->setDefaultAction(currentAction);
+        syntaxMenu->addAction(currentAction);
+        connect(currentAction, &QAction::triggered, [this, i]() {
+            updateHighlightingAction(i);
+        });
+    }
+    highlightingButton->setMenu(syntaxMenu);
+    statusBar()->addWidget(lineNumberLabel, 1);
+    statusBar()->addWidget(highlightingButton, 1);
+
     createMenus();
     createTabBar();
 
     layout->addWidget(tabBar);
     CodeEditor *codeEditor = new CodeEditor();
     createTab(codeEditor);
-
-    statusBar()->showMessage("Line: 1");
 
     setWindowTitle(tr("Menus"));
     setMinimumSize(160, 160);
@@ -63,12 +80,10 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 
 void MainWindow::createTab(CodeEditor *codeEditor, QString title)
 {
-
     tabBar->createEditorTab(codeEditor, title);
     connect(codeEditor, SIGNAL(updateLineNumber(int)), this, SLOT(updateLineNumber(int)));
     int lastTabIndex = tabBar->count() - 1;
     tabBar->setCurrentIndex(lastTabIndex);
-
 }
 
 void MainWindow::newFile()
@@ -191,11 +206,6 @@ void MainWindow::setLineSpacing()
     infoLabel->setText(tr("Invoked <b>Edit|Format|Set Line Spacing</b>"));
 }
 
-void MainWindow::setParagraphSpacing()
-{
-    infoLabel->setText(tr("Invoked <b>Edit|Format|Set Paragraph Spacing</b>"));
-}
-
 void MainWindow::about()
 {
     infoLabel->setText(tr("Invoked <b>Help|About</b>"));
@@ -210,11 +220,17 @@ void MainWindow::aboutQt()
 
 void MainWindow::updateLineNumber(int lineNumber)
 {
-    statusBar()->showMessage("Line: " + QString::number(lineNumber));
+    lineNumberLabel->setText("Line: " + QString::number(lineNumber));
 }
 
 void MainWindow::createActions()
 {
+    QStringList options = {"asdf", "fda", "fdas"};
+    for (int i = 0; i < options.size(); i++) {
+        QAction *syntaxHighightAct = new QAction(options.at(i));
+        syntaxHighlightingActs.push_back(syntaxHighightAct);
+    }
+
     newAct = new QAction(tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
     newAct->setStatusTip(tr("Create a new file"));
@@ -317,6 +333,7 @@ void MainWindow::createMenus()
 
     formatMenu = editMenu->addMenu(tr("&Format"));
     formatMenu->addAction(setLineSpacingAct);
+
 }
 
 void MainWindow::createTabBar()
@@ -357,7 +374,6 @@ void MainWindow::startAction()
     }
     else if (currentEditorConnected)
         QMessageBox::information(this, tr(""), QString("Error: Already connected to a server"));
-
 }
 
 void MainWindow::connectAction()
@@ -391,8 +407,13 @@ void MainWindow::connectionInfoAction()
     QMessageBox messageBox;
     QString hosting = currentEditor->editorServer->isListening() ? "true" : "false";
     QString port = currentEditor->connectedPort == 0 ? "N/A" : QString::number(currentEditor->connectedPort);
-    QString text = QString("Hosting file: " + hosting + "\n" +
-                           "Connected port: " + port);
+    QString text = QString("Hosting file: " + hosting + "\n" + "Connected port: " + port);
     messageBox.setText(text);
     messageBox.exec();
+}
+
+void MainWindow::updateHighlightingAction(int index)
+{
+    qDebug() << syntaxHighlightingActs.at(index)->text();
+    highlightingButton->setDefaultAction(syntaxHighlightingActs.at(index));
 }

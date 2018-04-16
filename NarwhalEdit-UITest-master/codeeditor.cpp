@@ -191,7 +191,6 @@ void CodeEditor::tryIgnore()
                 textCursor().deletePreviousChar();
             }
         }
-
     }
 }
 
@@ -238,10 +237,11 @@ void CodeEditor::findCompletionKeywords()
                                  '[', ']', '<', '>', '\n', '\t'};
     for (int i = 0; i < currentText.size(); i++) {
         if (std::find(excludeChars.begin(), excludeChars.end(), currentText[i]) != excludeChars.end()) {
-            if (!wordList.contains(tempKeyword))
+            if (!wordList.contains(tempKeyword)) {
                 wordList << tempKeyword;
                 tempKeyword = "";
             }
+        }
         else
             tempKeyword += currentText[i];
     }
@@ -273,12 +273,12 @@ void CodeEditor::insertCompletion(const QString &completion)
 {
     if (cmpltr->widget() != this)
             return;
-        QTextCursor tc = textCursor();
-        int extra = completion.length() - cmpltr->completionPrefix().length();
-        tc.movePosition(QTextCursor::Left);
-        tc.movePosition(QTextCursor::EndOfWord);
-        tc.insertText(completion.right(extra));
-        setTextCursor(tc);
+    QTextCursor tc = textCursor();
+    int extra = completion.length() - cmpltr->completionPrefix().length();
+    tc.movePosition(QTextCursor::Left);
+    tc.movePosition(QTextCursor::EndOfWord);
+    tc.insertText(completion.right(extra));
+    setTextCursor(tc);
 }
 
 QString CodeEditor::textUnderCursor() const

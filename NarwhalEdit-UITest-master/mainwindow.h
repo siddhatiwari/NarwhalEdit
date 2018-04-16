@@ -6,6 +6,8 @@
 #include <QTextEdit>
 #include "tabbar.h"
 #include <QTextCursor>
+#include <QToolButton>
+#include <vector>
 
 class QAction;
 class QActionGroup;
@@ -34,13 +36,13 @@ private slots:
     void copy();
     void paste();
     void setLineSpacing();
-    void setParagraphSpacing();
     void about();
     void aboutQt();
     void updateLineNumber(int lineNumber);
     void startAction();
     void connectAction();
     void connectionInfoAction();
+    void updateHighlightingAction(int index);
     void updateCurrentTab();
 
 private:
@@ -53,11 +55,14 @@ private:
 
     TabBar *tabBar;
     CodeEditor *currentEditor;
+    QLabel *lineNumberLabel;
+    QToolButton *highlightingButton;
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *formatMenu;
     QMenu *helpMenu;
     QActionGroup *alignmentGroup;
+    std::vector<QAction *> syntaxHighlightingActs;
     QAction *newAct;
     QAction *openAct;
     QAction *saveAct;
