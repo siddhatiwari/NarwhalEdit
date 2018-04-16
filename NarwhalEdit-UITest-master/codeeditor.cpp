@@ -50,10 +50,23 @@ void CodeEditor::setupEditor()
     connect(this, SIGNAL(textChanged()), this, SLOT(rehighlight()));
     connect(this, SIGNAL(textChanged()), this, SLOT(completeText()));
     connect(this, SIGNAL(textChanged()), this, SLOT(findCompletionKeywords()));
+    connect(this, &CodeEditor::textChanged, [this]() {
+       documentSaved = false;
+    });
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(calculateNewLineNumber()));
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+}
+
+bool CodeEditor::getDocumentSaved()
+{
+    return documentSaved;
+}
+
+void CodeEditor::setDocumentSaved(bool saved)
+{
+    documentSaved = saved;
 }
 
 int CodeEditor::lineNumberAreaWidth()

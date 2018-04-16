@@ -12,9 +12,11 @@ public:
     TabBar();
     ~TabBar();
     void createEditorTab(CodeEditor *codeEditor, QString title = "New Tab");
+    bool quitRequested();
+    bool handleTabCloseRequest(int tabIndex);
 
 private slots:
-    void handleCloseRequested(int tabIndex);
+    bool handleCloseRequested(int tabIndex);
 };
 
 #endif // TABBAR_H

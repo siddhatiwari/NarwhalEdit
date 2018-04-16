@@ -28,6 +28,8 @@ public:
     Server *editorServer;
     QTcpSocket *editorSocket;
     int connectedPort = 0;
+    bool getDocumentSaved();
+    void setDocumentSaved(bool saved);
 
 private:
     void setupEditor();
@@ -41,6 +43,7 @@ private:
     };
     QString textUnderCursor() const;
     QCompleter *cmpltr;
+    bool documentSaved = false;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -67,7 +70,7 @@ private slots:
     /**
      * Rehighlights all of the text in the document
      *
-     * @brief Rehighlight text
+     * @brief Rehighlights text
      * @param none
      * @return void
      */

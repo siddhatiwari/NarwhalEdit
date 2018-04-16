@@ -3,6 +3,8 @@
 #include <QTabBar>
 #include <QTextCursor>
 #include <Qdebug>
+#include <QApplication>
+#include <QMessageBox>
 #include "codeeditor.h"
 #include "highlighter.h"
 
@@ -21,7 +23,65 @@ void TabBar::createEditorTab(CodeEditor *codeEditor, QString title)
     this->addTab(codeEditor, title);
 }
 
-void TabBar::handleCloseRequested(int tabIndex)
+bool TabBar::handleCloseRequested(int tabIndex)
 {
-    this->removeTab(tabIndex);
+    if (handleTabCloseRequest(tabIndex))
+        this->removeTab(tabIndex);
+    if (count() == 0)
+        QApplication::quit();
+}
+
+bool TabBar::handleTabCloseRequest(int tabIndex)
+{
+    bool serversOpen = false;
+    bool connectionsOpen = false;
+    bool unsavedDocuments = false;
+    CodeEditor *currentEditor = qobject_cast<CodeEditor *>(widget(tabIndex));
+
+    if (currentEditor->editorServer->isListening())
+        serversOpen = true;
+    if (currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState)
+        connectionsOpen = true;
+    if (!currentEditor->getDocumentSaved())
+        unsavedDocuments = true;
+
+    if (serversOpen) {
+        int response =  QMessageBox::question(
+                    this, "", QString("There are editor server(s) open, do you still want to close?"),
+                    QMessageBox::Yes | QMessageBox::No);
+        if (response == QMessageBox::Yes)
+            return true;
+    }
+
+    if (connectionsOpen) {
+        int response =  QMessageBox::question(
+                    this, "", QString("There are editor connection(s) open, do you still want to close?"),
+                    QMessageBox::Yes | QMessageBox::No);
+        if (response == QMessageBox::Yes)
+            return true;
+    }
+
+    if (unsavedDocuments) {
+        int response =  QMessageBox::question(
+                    this, "", QString("There are unsaved documents open, do you still want to close?"),
+                    QMessageBox::Yes | QMessageBox::No);
+        if (response == QMessageBox::Yes)
+            return true;
+    }
+
+    return false;
+}
+
+bool TabBar::quitRequested()
+{
+
+    bool quitConfirmed = false;
+    for (int i = 0; i < count(); i++) {
+        quitConfirmed = handleTabCloseRequest(i);
+    }
+
+    if (quitConfirmed)
+        QApplication::quit();
+    else
+        return false;
 }

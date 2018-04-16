@@ -33,25 +33,8 @@ MainWindow::MainWindow()
     layout->addWidget(infoLabel);
     widget->setLayout(layout);
 
+    setupStatusBar();
     createActions();
-
-    lineNumberLabel = new QLabel("Line: 1");
-    highlightingButton = new QToolButton();
-    highlightingButton->setPopupMode(QToolButton::MenuButtonPopup);
-    QMenu *syntaxMenu = new QMenu();
-    for (int i = 0; i < syntaxHighlightingActs.size(); i++) {
-        QAction *currentAction = syntaxHighlightingActs.at(i);
-        if (i == 0)
-            highlightingButton->setDefaultAction(currentAction);
-        syntaxMenu->addAction(currentAction);
-        connect(currentAction, &QAction::triggered, [this, i]() {
-            updateHighlightingAction(i);
-        });
-    }
-    highlightingButton->setMenu(syntaxMenu);
-    statusBar()->addWidget(lineNumberLabel, 1);
-    statusBar()->addWidget(highlightingButton, 1);
-
     createMenus();
     createTabBar();
 
@@ -73,7 +56,6 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     menu.addAction(cutAct);
     menu.addAction(copyAct);
     menu.addAction(pasteAct);
-    menu.addAction(startAct);
     menu.exec(event->globalPos());
 }
 #endif // QT_NO_CONTEXTMENU
@@ -155,7 +137,7 @@ void MainWindow::save()
             }
 
             QDataStream out(&file);
-            QPlainTextEdit *currentEditor = qobject_cast<QPlainTextEdit *>(tabBar->currentWidget());
+            CodeEditor *currentEditor = qobject_cast<CodeEditor *>(tabBar->currentWidget());
 
             out << currentEditor->toPlainText();
 
@@ -165,7 +147,7 @@ void MainWindow::save()
             QFileInfo fileInfo(fileName);
             int currentIndex = tabBar->currentIndex();
             tabBar->setTabText(currentIndex, fileInfo.fileName());
-
+            currentEditor->setDocumentSaved(true);
         }
 
     }
@@ -221,6 +203,16 @@ void MainWindow::aboutQt()
 void MainWindow::updateLineNumber(int lineNumber)
 {
     lineNumberLabel->setText("Line: " + QString::number(lineNumber));
+}
+
+void MainWindow::setupStatusBar()
+{
+    lineNumberLabel = new QLabel("Line: 1");
+    highlightingButton = new QToolButton();
+    highlightingButton->setPopupMode(QToolButton::MenuButtonPopup);
+    syntaxMenu = new QMenu();
+    statusBar()->addWidget(lineNumberLabel, 1);
+    statusBar()->addWidget(highlightingButton, 1);
 }
 
 void MainWindow::createActions()
@@ -308,6 +300,18 @@ void MainWindow::createActions()
 
 void MainWindow::createMenus()
 {
+
+    for (int i = 0; i < syntaxHighlightingActs.size(); i++) {
+        QAction *currentAction = syntaxHighlightingActs.at(i);
+        if (i == 0)
+            highlightingButton->setDefaultAction(currentAction);
+        syntaxMenu->addAction(currentAction);
+        connect(currentAction, &QAction::triggered, [this, i]() {
+            updateHighlightingAction(i);
+        });
+    }
+    highlightingButton->setMenu(syntaxMenu);
+
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
@@ -416,4 +420,13 @@ void MainWindow::updateHighlightingAction(int index)
 {
     qDebug() << syntaxHighlightingActs.at(index)->text();
     highlightingButton->setDefaultAction(syntaxHighlightingActs.at(index));
+}
+
+#include <QCloseEvent>
+void MainWindow::closeEvent (QCloseEvent *event)
+{
+    if (tabBar->quitRequested())
+        event->accept();
+    else
+        event->ignore();
 }

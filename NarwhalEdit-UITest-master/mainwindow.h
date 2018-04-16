@@ -46,17 +46,20 @@ private slots:
     void updateCurrentTab();
 
 private:
+    void setupStatusBar();
     void createActions();
     void createMenus();
     void createTabBar();
     void createTextEditor();
     void createSideBar();
     void createTab(CodeEditor *codeEditor, QString title = "New Tab");
+    void closeEvent(QCloseEvent *bar);
 
     TabBar *tabBar;
     CodeEditor *currentEditor;
     QLabel *lineNumberLabel;
     QToolButton *highlightingButton;
+    QMenu *syntaxMenu;
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *formatMenu;
