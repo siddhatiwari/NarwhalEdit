@@ -1,3 +1,4 @@
+
 #include <QtWidgets>
 #include <QTextCursor>
 #include <QDebug>
@@ -100,8 +101,7 @@ void MainWindow::open()
         QDataStream in(&file);
         QString text;
 
-        //in >> text >> s;
-        qDebug() << text;
+        in >> text;
 
         file.flush();
         file.close();
@@ -154,11 +154,6 @@ void MainWindow::save()
         }
 
     }
-}
-
-void MainWindow::print()
-{
-    infoLabel->setText(tr("Invoked <b>File|Print</b>"));
 }
 
 void MainWindow::undo()
@@ -235,11 +230,6 @@ void MainWindow::createActions()
     saveAct->setStatusTip(tr("Save the document to disk"));
     connect(saveAct, &QAction::triggered, this, &MainWindow::save);
 
-    printAct = new QAction(tr("&Print..."), this);
-    printAct->setShortcuts(QKeySequence::Print);
-    printAct->setStatusTip(tr("Print the document"));
-    connect(printAct, &QAction::triggered, this, &MainWindow::print);
-
     exitAct = new QAction(tr("&Exit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Exit the application"));
@@ -281,6 +271,10 @@ void MainWindow::createActions()
     connectAct->setStatusTip(tr("Connect to an editor server"));
     connect(connectAct, SIGNAL(triggered(bool)), this, SLOT(connectAction()));
 
+    connectionInfoAct = new QAction(tr("&Connection Info"), this);
+    connectAct->setStatusTip(tr("Check your Server and Client connection information"));
+    connect(connectionInfoAct, SIGNAL(triggered(bool)), this, SLOT(connectionInfoAction()));
+
     setLineSpacingAct = new QAction(tr("Set &Line Spacing..."), this);
     setLineSpacingAct->setStatusTip(tr("Change the gap between the lines of a "
                                        "paragraph"));
@@ -304,7 +298,7 @@ void MainWindow::createMenus()
     fileMenu->addAction(saveAct);
     fileMenu->addAction(startAct);
     fileMenu->addAction(connectAct);
-    fileMenu->addAction(printAct);
+    fileMenu->addAction(connectionInfoAct);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 
@@ -338,16 +332,67 @@ void MainWindow::updateCurrentTab()
 
 void MainWindow::startAction()
 {
-    currentEditor->editorServer->startServer();
-    currentEditor->editorSocket->connectToHost(QHostAddress::Any, 2000);
-    if (!currentEditor->editorSocket->waitForConnected())
-        QMessageBox::information(this, tr("Unable to connect to host"), QString(""));
+    bool currentEditorConnected = currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState;
+    if (!currentEditorConnected) {
+        if (!currentEditor->editorServer->isListening()) {
+            int portInput = QInputDialog::getInt(this, tr("Connection Port"),
+                                                     tr("Port:"), QLineEdit::Normal);
+            if (portInput >= 1000 && portInput <= 9999) {
+                currentEditor->editorServer->startServer(portInput);
+                currentEditor->editorSocket->connectToHost(QHostAddress::Any, portInput);
+                if (!currentEditor->editorSocket->waitForConnected())
+                    QMessageBox::information(this, tr(""), QString("Error: Unable to connect to host"));
+                else {
+                    currentEditor->connectedPort = portInput;
+                    qDebug() << "Connected to host";
+                }
+            }
+            else
+                QMessageBox::information(this, tr(""), QString("Error: Invalid server port " + QString::number(portInput)));
+        }
+        else {
+            int currentTabIndex = tabBar->currentIndex();
+            QMessageBox::information(this, tr(""), QString("Error: Server for '" + tabBar->tabText(currentTabIndex) + "' already running!"));
+        }
+    }
+    else if (currentEditorConnected)
+        QMessageBox::information(this, tr(""), QString("Error: Already connected to a server"));
+
 }
 
 void MainWindow::connectAction()
 {
-    qDebug() << "trying";
-    currentEditor->editorSocket->connectToHost(QHostAddress::Any, 2000);
-    if (!currentEditor->editorSocket->waitForConnected())
-        QMessageBox::information(this, tr("Unable to connect to host"), QString(""));
+    bool currentEditorConnected = currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState;
+    if (!currentEditorConnected) {
+        int portInput = QInputDialog::getInt(this, tr("Connection Port"),
+                                                 tr("Port:"), QLineEdit::Normal);
+        if (portInput >= 1000 && portInput <= 9999) {
+            currentEditor->editorSocket->connectToHost(QHostAddress::Any, portInput);
+            if (!currentEditor->editorSocket->waitForConnected())
+                QMessageBox::information(this, tr(""), QString("Error: Unable to connect to host"));
+            else {
+                currentEditor->connectedPort = portInput;
+                qDebug() << "Connected to host";
+            }
+        }
+        else
+            QMessageBox::information(this, tr(""), QString("Error: Invalid server port " + QString::number(portInput)));
+    }
+    else if (currentEditorConnected) {
+        QString currentAddress = QString::number(currentEditor->editorSocket->localPort());
+        QMessageBox::information(this, tr(""), QString("Error: Already connected to host on port " + currentAddress));
+    }
+    else
+        QMessageBox::information(this, tr(""), QString("Error: Connection failed"));
+}
+
+void MainWindow::connectionInfoAction()
+{
+    QMessageBox messageBox;
+    QString hosting = currentEditor->editorServer->isListening() ? "true" : "false";
+    QString port = currentEditor->connectedPort == 0 ? "N/A" : QString::number(currentEditor->connectedPort);
+    QString text = QString("Hosting file: " + hosting + "\n" +
+                           "Connected port: " + port);
+    messageBox.setText(text);
+    messageBox.exec();
 }

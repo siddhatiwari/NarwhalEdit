@@ -28,7 +28,6 @@ private slots:
     void newFile();
     void open();
     void save();
-    void print();
     void undo();
     void redo();
     void cut();
@@ -41,6 +40,7 @@ private slots:
     void updateLineNumber(int lineNumber);
     void startAction();
     void connectAction();
+    void connectionInfoAction();
     void updateCurrentTab();
 
 private:
@@ -61,7 +61,6 @@ private:
     QAction *newAct;
     QAction *openAct;
     QAction *saveAct;
-    QAction *printAct;
     QAction *exitAct;
     QAction *undoAct;
     QAction *redoAct;
@@ -70,6 +69,7 @@ private:
     QAction *pasteAct;
     QAction *startAct;
     QAction *connectAct;
+    QAction *connectionInfoAct;
     QAction *setLineSpacingAct;
     QAction *aboutAct;
     QAction *aboutQtAct;

@@ -2,8 +2,8 @@
 #ifndef SERVER_H
 #define SERVER_H
 #include <QTcpServer>
+#include <QTcpSocket>
 #include <vector>
-#include "mythread.h"
 
 class Server : public QTcpServer
 {
@@ -11,7 +11,7 @@ class Server : public QTcpServer
 public:
     explicit Server(QObject *parent = 0);
     ~Server();
-    void startServer();
+    void startServer(int port);
     std::vector<QTcpSocket *> sockets;
 
 signals:
@@ -22,8 +22,6 @@ private slots:
     void disconnected();
     void readyRead();
 
-protected:
-    //void incomingConnection(qintptr socketDescriptor);
 };
 
 #endif // SERVER_H

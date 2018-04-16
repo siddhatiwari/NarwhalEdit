@@ -5,8 +5,8 @@
 #-------------------------------------------------
 
 QT       += core gui
-QT += widgets
 QT += network
+QT += widgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -31,16 +31,14 @@ SOURCES += \
     tabbar.cpp \
     codeeditor.cpp \
     highlighter.cpp \
-    server.cpp \
-    mythread.cpp
+    server.cpp
 
 HEADERS += \
         mainwindow.h \
     tabbar.h \
     codeeditor.h \
     highlighter.h \
-    server.h \
-    mythread.h
+    server.h
 
 FORMS += \
         mainwindow.ui

@@ -1,7 +1,7 @@
+
 #include "server.h"
 #include <QDebug>
 #include <QApplication>
-#include "mythread.h"
 
 Server::Server(QObject *parent) : QTcpServer(parent)
 {
@@ -13,9 +13,9 @@ Server::~Server()
     close();
 }
 
-void Server::startServer()
+void Server::startServer(int port)
 {
-    if (!listen(QHostAddress::Any, 2000))
+    if (!listen(QHostAddress::Any, port))
         qDebug() << "Could not start server";
     else
         qDebug() << "Listening...";

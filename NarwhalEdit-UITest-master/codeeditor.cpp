@@ -195,15 +195,12 @@ void CodeEditor::tryIgnore()
     }
 }
 
-static inline QByteArray IntToArray(qint32 source);
-
 bool CodeEditor::writeData()
 {
     if (editorSocket->state() == QAbstractSocket::ConnectedState) {
         qDebug() << "writing data";
         QString currentText = toPlainText();
         QByteArray data = currentText.toLocal8Bit();
-        //editorSocket->write(IntToArray(data).size());
         editorSocket->write(data);
         return editorSocket->waitForBytesWritten();
     }
@@ -223,19 +220,12 @@ void CodeEditor::sendData(QByteArray data)
 
 void CodeEditor::updateText()
 {
-    QString updatedText = editorSocket->readAll();
     blockSignals(true);
+
+    QString updatedText = editorSocket->readAll();
     document()->setPlainText(updatedText);
+
     blockSignals(false);
-}
-
-
-QByteArray IntToArray(qint32 source)
-{
-    QByteArray temp;
-    QDataStream data(&temp, QIODevice::ReadWrite);
-    data << source;
-    return temp;
 }
 
 void CodeEditor::findCompletionKeywords()

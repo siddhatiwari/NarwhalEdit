@@ -27,6 +27,7 @@ public:
     QCompleter *completer() const;
     Server *editorServer;
     QTcpSocket *editorSocket;
+    int connectedPort = 0;
 
 private:
     void setupEditor();
@@ -60,6 +61,7 @@ private slots:
      * @return void
      */
     void highlightCurrentLine();
+
     void updateLineNumberArea(const QRect &, int);
 
     /**
