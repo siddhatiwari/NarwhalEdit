@@ -38,6 +38,11 @@ void Server::newConnection()
 void Server::disconnected()
 {
     QTcpSocket *socket = static_cast<QTcpSocket *>(sender());
+    for (int i = 0; i < sockets.size(); i++) {
+        if (sockets.at(i) == socket)
+            sockets.erase(sockets.begin() + i);
+    }
+
     socket->deleteLater();
     connections--;
 }
@@ -45,7 +50,7 @@ void Server::disconnected()
 void Server::readyRead()
 {
     QTcpSocket *socket = static_cast<QTcpSocket *>(sender());
-    QByteArray data  = socket->readAll();
+    QByteArray data = socket->readAll();
     emit dataReceived(data, socket);
 }
 

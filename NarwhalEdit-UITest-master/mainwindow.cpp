@@ -167,11 +167,6 @@ void MainWindow::paste()
     currentEditor->paste();
 }
 
-void MainWindow::setLineSpacing()
-{
-
-}
-
 void MainWindow::about()
 {
     QMessageBox::about(this, tr("About Menu"),
@@ -264,11 +259,6 @@ void MainWindow::createActions()
     connectAct->setStatusTip(tr("Check your Server and Client connection information"));
     connect(connectionInfoAct, SIGNAL(triggered(bool)), this, SLOT(connectionInfoAction()));
 
-    setLineSpacingAct = new QAction(tr("Set &Line Spacing..."), this);
-    setLineSpacingAct->setStatusTip(tr("Change the gap between the lines of a "
-                                       "paragraph"));
-    connect(setLineSpacingAct, &QAction::triggered, this, &MainWindow::setLineSpacing);
-
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
@@ -317,9 +307,6 @@ void MainWindow::createMenus()
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
     helpMenu->addAction(aboutQtAct);
-
-    formatMenu = editMenu->addMenu(tr("&Format"));
-    formatMenu->addAction(setLineSpacingAct);
 
 }
 

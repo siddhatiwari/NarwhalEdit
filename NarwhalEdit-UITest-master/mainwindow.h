@@ -35,7 +35,6 @@ private slots:
     void cut();
     void copy();
     void paste();
-    void setLineSpacing();
     void about();
     void updateLineNumber(int lineNumber);
     void startServerAction();
@@ -64,7 +63,6 @@ private:
     QMenu *fileMenu;
     QMenu *networkMenu;
     QMenu *editMenu;
-    QMenu *formatMenu;
     QMenu *helpMenu;
     QActionGroup *alignmentGroup;
     std::vector<QAction *> syntaxHighlightingActs;
@@ -82,7 +80,6 @@ private:
     QAction *connectAct;
     QAction *disconnectAct;
     QAction *connectionInfoAct;
-    QAction *setLineSpacingAct;
     QAction *aboutAct;
     QAction *aboutQtAct;
 
