@@ -295,7 +295,7 @@ void CodeEditor::setCompleter(QCompleter *completer)
 void CodeEditor::insertCompletion(const QString &completion)
 {
     if (cmpltr->widget() != this)
-            return;
+        return;
     QTextCursor tc = textCursor();
     int extra = completion.length() - cmpltr->completionPrefix().length();
     tc.movePosition(QTextCursor::Left);

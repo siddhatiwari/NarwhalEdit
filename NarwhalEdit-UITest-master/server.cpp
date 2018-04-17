@@ -42,7 +42,6 @@ void Server::disconnected()
         if (sockets.at(i) == socket)
             sockets.erase(sockets.begin() + i);
     }
-
     socket->deleteLater();
     connections--;
 }

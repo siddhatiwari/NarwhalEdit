@@ -439,6 +439,7 @@ void MainWindow::updateNetworkMenuOptions()
 void MainWindow::closeEvent (QCloseEvent *event)
 {
     if (tabBar->quitRequested()) {
+        tabBar->programExiting = true;
         QSettings settings;
         settings.beginGroup("MainWindow");
         settings.setValue("size", size());

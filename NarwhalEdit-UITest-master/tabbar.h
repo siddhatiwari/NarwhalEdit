@@ -14,6 +14,7 @@ public:
     void createEditorTab(CodeEditor *codeEditor, QString title = "New Tab");
     bool quitRequested();
     bool handleTabCloseRequest(int tabIndex);
+    bool programExiting = false;
 
 private slots:
     bool handleCloseRequested(int tabIndex);

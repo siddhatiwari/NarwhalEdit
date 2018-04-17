@@ -33,40 +33,44 @@ bool TabBar::handleCloseRequested(int tabIndex)
 
 bool TabBar::handleTabCloseRequest(int tabIndex)
 {
-    bool serversOpen = false;
-    bool connectionsOpen = false;
-    bool unsavedDocuments = false;
-    CodeEditor *currentEditor = qobject_cast<CodeEditor *>(widget(tabIndex));
+    if (!programExiting) {
+        bool serversOpen = false;
+        bool connectionsOpen = false;
+        bool unsavedDocuments = false;
+        CodeEditor *currentEditor = qobject_cast<CodeEditor *>(widget(tabIndex));
 
-    if (currentEditor->editorServer->isListening())
-        serversOpen = true;
-    if (currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState)
-        connectionsOpen = true;
-    if (!currentEditor->getDocumentSaved())
-        unsavedDocuments = true;
+        if (currentEditor->editorServer->isListening())
+            serversOpen = true;
+        if (currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState)
+            connectionsOpen = true;
+        if (!currentEditor->getDocumentSaved())
+            unsavedDocuments = true;
 
-    if (serversOpen) {
-        int response =  QMessageBox::question(
-                    this, "", QString("There are editor server(s) open, do you still want to close?"),
-                    QMessageBox::Yes | QMessageBox::No);
-        return response == QMessageBox::Yes;
+        if (serversOpen) {
+            int response =  QMessageBox::question(
+                        this, "", QString("There are editor server(s) open, do you still want to close?"),
+                        QMessageBox::Yes | QMessageBox::No);
+            return response == QMessageBox::Yes;
+        }
+
+        if (connectionsOpen) {
+            int response =  QMessageBox::question(
+                        this, "", QString("There are editor connection(s) open, do you still want to close?"),
+                        QMessageBox::Yes | QMessageBox::No);
+            return response == QMessageBox::Yes;
+        }
+
+        if (unsavedDocuments) {
+            int response =  QMessageBox::question(
+                        this, "", QString("There are unsaved documents open, do you still want to close?"),
+                        QMessageBox::Yes | QMessageBox::No);
+            return response == QMessageBox::Yes;
+        }
+
+        return false;
     }
-
-    if (connectionsOpen) {
-        int response =  QMessageBox::question(
-                    this, "", QString("There are editor connection(s) open, do you still want to close?"),
-                    QMessageBox::Yes | QMessageBox::No);
-        return response == QMessageBox::Yes;
-    }
-
-    if (unsavedDocuments) {
-        int response =  QMessageBox::question(
-                    this, "", QString("There are unsaved documents open, do you still want to close?"),
-                    QMessageBox::Yes | QMessageBox::No);
-        return response == QMessageBox::Yes;
-    }
-
-    return false;
+    else
+        return true;
 }
 
 bool TabBar::quitRequested()
@@ -74,6 +78,8 @@ bool TabBar::quitRequested()
     bool quitConfirmed = false;
     for (int i = 0; i < count(); i++) {
         quitConfirmed = handleTabCloseRequest(i);
+        if (quitConfirmed)
+            break;
     }
     return quitConfirmed;
 }
