@@ -413,7 +413,6 @@ void MainWindow::connectAction()
 
 void MainWindow::disconnectAction()
 {
-    qDebug() << "diso";
     if (!currentEditor->editorServer->isListening() && currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState)
         currentEditor->editorSocket->close();
     updateNetworkMenuOptions();

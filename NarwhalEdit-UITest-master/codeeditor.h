@@ -98,7 +98,7 @@ private slots:
 
     bool writeData();
 
-    void sendData(QByteArray data);
+    void sendData(QByteArray data, QTcpSocket *sender);
 
     void updateText();
 

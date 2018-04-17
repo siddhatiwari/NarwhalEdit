@@ -44,6 +44,6 @@ void Server::readyRead()
 {
     QTcpSocket *socket = static_cast<QTcpSocket *>(sender());
     QByteArray data  = socket->readAll();
-    emit dataReceived(data);
+    emit dataReceived(data, socket);
 }
 

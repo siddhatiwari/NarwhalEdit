@@ -15,7 +15,7 @@ public:
     std::vector<QTcpSocket *> sockets;
 
 signals:
-    void dataReceived(QByteArray data);
+    void dataReceived(QByteArray data, QTcpSocket *sender);
 
 private slots:
     void newConnection();

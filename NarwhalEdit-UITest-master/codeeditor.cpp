@@ -39,7 +39,7 @@ void CodeEditor::setupEditor()
     setCompleter(cmp);
 
     editorServer = new Server();
-    connect(editorServer, SIGNAL(dataReceived(QByteArray)), this, SLOT(sendData(QByteArray)));
+    connect(editorServer, &Server::dataReceived, this, &CodeEditor::sendData);
 
     editorSocket = new QTcpSocket();
     connect(editorSocket, SIGNAL(readyRead()), this, SLOT(updateText()));
@@ -224,12 +224,13 @@ bool CodeEditor::writeData()
         return false;
 }
 
-void CodeEditor::sendData(QByteArray data)
+void CodeEditor::sendData(QByteArray data, QTcpSocket *sender)
 {
     if (editorServer->isListening()) {
         for (int i = 0; i < editorServer->sockets.size(); i++) {
             QTcpSocket *socket = editorServer->sockets.at(i);
-            socket->write(data);
+            if (socket != sender)
+                socket->write(data);
         }
     }
 }
