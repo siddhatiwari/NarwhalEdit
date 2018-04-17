@@ -359,13 +359,6 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
 
 void CodeEditor::calculateNewLineNumber()
 {
-    QString currentText = toPlainText();
-    int newLineCount = 0;
-    for (int i = 0; i < currentText.size(); i++) {
-        if (currentText[i] == '\n')
-            newLineCount++;
-    }
-
-    currentLine = newLineCount + 1;
-    emit updateLineNumber(newLineCount + 1);
+    currentLine = (cursorRect().y() - 4) / cursorRect().size().height() + 1;
+    emit updateLineNumber(currentLine);
 }
