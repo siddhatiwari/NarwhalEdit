@@ -23,7 +23,6 @@ public:
     ~CodeEditor();
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
-    void setCompleter(QCompleter *c);
     QCompleter *completer() const;
     Server *editorServer;
     QTcpSocket *editorSocket;

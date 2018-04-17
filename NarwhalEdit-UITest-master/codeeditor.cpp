@@ -4,7 +4,6 @@
 #include <algorithm>
 #include "codeeditor.h"
 #include "mainwindow.h"
-#include "language.h"
 #include "c_plus_plus.h"
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
@@ -34,11 +33,16 @@ void CodeEditor::setupEditor()
     lineNumberArea = new LineNumberArea(this);
 
     // Sets up highlighter
-    highlighter = new Highlighter(document(), new C_Plus_Plus());//jishdjfkgdskjhfgdsjfgk
+    highlighter = new Highlighter(document(), new C_Plus_Plus());
 
     // Sets up autocompleter
     QCompleter *cmp = new QCompleter(this->parent());
-    setCompleter(cmp);
+    cmpltr = cmp;
+    cmpltr->setWidget(this);
+    cmpltr->setCompletionMode(QCompleter::PopupCompletion);
+    cmpltr->setCaseSensitivity(Qt::CaseInsensitive);
+    cmpltr->setWrapAround(false);
+    connect(cmpltr, SIGNAL(activated(QString)), this, SLOT(insertCompletion(QString)));
 
     editorServer = new Server();
     connect(editorServer, &Server::dataReceived, this, &CodeEditor::sendData);
@@ -254,44 +258,33 @@ void CodeEditor::updateText()
 
 void CodeEditor::findCompletionKeywords()
 {
-    QString currentText = toPlainText();
-    QStringList wordList;
-
-    QString tempKeyword;
     std::vector<char> excludeChars = {' ', '.', '(', ')', '{', '}',
-                                 '[', ']', '<', '>', '\n', '\t'};
+                                 '[', ']', '<', '>', '\n', '\t', '-'};
+    QString currentText = toPlainText();
+    int typedStart = -1;
+    int typedEnd = textCursor().position();
+    for (int x = typedEnd; x >= 0; x--){
+        if (std::find(excludeChars.begin(), excludeChars.end(), currentText[x]) != excludeChars.end()) {
+            typedStart = x + 1;
+            break;
+        }
+    }
+
+    currentText = currentText.mid(0, typedStart) + currentText.mid(typedEnd);
+    QStringList wordList;
+    QString tempKeyword;
+    qDebug() << currentText;
     for (int i = 0; i < currentText.size(); i++) {
-        if (std::find(excludeChars.begin(), excludeChars.end(), currentText[i]) != excludeChars.end()) {
-            if (!wordList.contains(tempKeyword)) {
+        if (std::find(excludeChars.begin(), excludeChars.end(), currentText[i]) != std::end(excludeChars)) {
+            if (!wordList.contains(tempKeyword))
                 wordList << tempKeyword;
-                tempKeyword = "";
-            }
+            tempKeyword = "";
         }
         else
             tempKeyword += currentText[i];
     }
 
-    QCompleter *cmp = new QCompleter(wordList, this->parent());
-    setCompleter(cmp);
-}
-
-void CodeEditor::setCompleter(QCompleter *completer)
-{
-    if (cmpltr) {
-        cmpltr->popup()->hide();
-        QObject::disconnect(cmpltr, 0, this, 0);
-    }
-
-    cmpltr = completer;
-
-    if (!cmpltr)
-        return;
-
-    cmpltr->setWidget(this);
-    cmpltr->setCompletionMode(QCompleter::PopupCompletion);
-    cmpltr->setCaseSensitivity(Qt::CaseInsensitive);
-    cmpltr->setWrapAround(false);
-    connect(cmpltr, SIGNAL(activated(QString)), this, SLOT(insertCompletion(QString)));
+    cmpltr->setModel(new QStringListModel(wordList, cmpltr));
 }
 
 void CodeEditor::insertCompletion(const QString &completion)
