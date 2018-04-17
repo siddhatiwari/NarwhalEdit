@@ -37,13 +37,13 @@ private slots:
     void paste();
     void setLineSpacing();
     void about();
-    void aboutQt();
     void updateLineNumber(int lineNumber);
-    void startAction();
+    void startServerAction();
+    void closeServerAction();
     void connectAction();
+    void disconnectAction();
     void connectionInfoAction();
     void updateHighlightingAction(int index);
-    void updateCurrentTab();
 
 private:
     void setupStatusBar();
@@ -53,7 +53,8 @@ private:
     void createTextEditor();
     void createSideBar();
     void createTab(CodeEditor *codeEditor, QString title = "New Tab");
-    void closeEvent(QCloseEvent *bar);
+    void closeEvent(QCloseEvent *bar) override;
+    void updateNetworkMenuOptions();
 
     TabBar *tabBar;
     CodeEditor *currentEditor;
@@ -61,6 +62,7 @@ private:
     QToolButton *highlightingButton;
     QMenu *syntaxMenu;
     QMenu *fileMenu;
+    QMenu *networkMenu;
     QMenu *editMenu;
     QMenu *formatMenu;
     QMenu *helpMenu;
@@ -75,8 +77,10 @@ private:
     QAction *cutAct;
     QAction *copyAct;
     QAction *pasteAct;
-    QAction *startAct;
+    QAction *startServerAct;
+    QAction *closeServerAct;
     QAction *connectAct;
+    QAction *disconnectAct;
     QAction *connectionInfoAct;
     QAction *setLineSpacingAct;
     QAction *aboutAct;

@@ -155,31 +155,26 @@ void MainWindow::save()
 
 void MainWindow::undo()
 {
-    infoLabel->setText(tr("Invoked <b>Edit|Undo</b>"));
     currentEditor->undo();
 }
 
 void MainWindow::redo()
 {
-    infoLabel->setText(tr("Invoked <b>Edit|Redo</b>"));
     currentEditor->redo();
 }
 
 void MainWindow::cut()
 {
-    infoLabel->setText(tr("Invoked <b>Edit|Cut</b>"));
     currentEditor->cut();
 }
 
 void MainWindow::copy()
 {
-    infoLabel->setText(tr("Invoked <b>Edit|Copy</b>"));
     currentEditor->copy();
 }
 
 void MainWindow::paste()
 {
-    infoLabel->setText(tr("Invoked <b>Edit|Paste</b>"));
     currentEditor->paste();
 }
 
@@ -190,14 +185,8 @@ void MainWindow::setLineSpacing()
 
 void MainWindow::about()
 {
-    infoLabel->setText(tr("Invoked <b>Help|About</b>"));
     QMessageBox::about(this, tr("About Menu"),
             tr("NarwhalEdit is a multi-user text editor"));
-}
-
-void MainWindow::aboutQt()
-{
-    infoLabel->setText(tr("Invoked <b>Help|About Qt</b>"));
 }
 
 void MainWindow::updateLineNumber(int lineNumber)
@@ -238,11 +227,6 @@ void MainWindow::createActions()
     saveAct->setStatusTip(tr("Save the document to disk"));
     connect(saveAct, &QAction::triggered, this, &MainWindow::save);
 
-    exitAct = new QAction(tr("&Exit"), this);
-    exitAct->setShortcuts(QKeySequence::Quit);
-    exitAct->setStatusTip(tr("Exit the application"));
-    connect(exitAct, &QAction::triggered, this, &QWidget::close);
-
     undoAct = new QAction(tr("&Undo"), this);
     undoAct->setShortcuts(QKeySequence::Undo);
     undoAct->setStatusTip(tr("Undo the last operation"));
@@ -271,13 +255,21 @@ void MainWindow::createActions()
                               "selection"));
     connect(pasteAct, &QAction::triggered, this, &MainWindow::paste);
 
-    startAct = new QAction(tr("&Start"), this);
-    startAct->setStatusTip(tr("Start a server so others can edit the current file"));
-    connect(startAct, SIGNAL(triggered(bool)), this, SLOT(startAction()));
+    startServerAct = new QAction(tr("&Start Server"), this);
+    startServerAct->setStatusTip(tr("Start a server so others can edit the current file"));
+    connect(startServerAct, SIGNAL(triggered(bool)), this, SLOT(startServerAction()));
+
+    closeServerAct = new QAction(tr("&Close Server"), this);
+    closeServerAct->setStatusTip(tr("Close the currently running server"));
+    connect(closeServerAct, SIGNAL(triggered(bool)), this, SLOT(closeServerAction()));
 
     connectAct = new QAction(tr("&Connect"), this);
     connectAct->setStatusTip(tr("Connect to an editor server"));
     connect(connectAct, SIGNAL(triggered(bool)), this, SLOT(connectAction()));
+
+    disconnectAct = new QAction(tr("&Disconnect"), this);
+    disconnectAct->setStatusTip(tr("Disconnect from the editor server"));
+    connect(disconnectAct, SIGNAL(triggered(bool)), this, SLOT(disconnectAction()));
 
     connectionInfoAct = new QAction(tr("&Connection Info"), this);
     connectAct->setStatusTip(tr("Check your Server and Client connection information"));
@@ -295,7 +287,6 @@ void MainWindow::createActions()
     aboutQtAct = new QAction(tr("About &Qt"), this);
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
     connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
-    connect(aboutQtAct, &QAction::triggered, this, &MainWindow::aboutQt);
 }
 
 void MainWindow::createMenus()
@@ -316,11 +307,14 @@ void MainWindow::createMenus()
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
-    fileMenu->addAction(startAct);
-    fileMenu->addAction(connectAct);
-    fileMenu->addAction(connectionInfoAct);
     fileMenu->addSeparator();
-    fileMenu->addAction(exitAct);
+
+    networkMenu = menuBar()->addMenu(QString("Network"));
+    networkMenu->addAction(startServerAct);
+    networkMenu->addAction(closeServerAct);
+    networkMenu->addAction(connectAct);
+    networkMenu->addAction(disconnectAct);
+    networkMenu->addAction(connectionInfoAct);
 
     editMenu = menuBar()->addMenu(tr("&Edit"));
     editMenu->addAction(undoAct);
@@ -343,15 +337,13 @@ void MainWindow::createMenus()
 void MainWindow::createTabBar()
 {
     tabBar = new TabBar();
-    connect(tabBar, SIGNAL(currentChanged(int)), this, SLOT(updateCurrentTab()));
+    connect(tabBar, &TabBar::currentChanged, [this]() {
+        currentEditor = qobject_cast<CodeEditor *>(tabBar->currentWidget());
+        updateNetworkMenuOptions();
+    });
 }
 
-void MainWindow::updateCurrentTab()
-{
-    currentEditor = qobject_cast<CodeEditor *>(tabBar->currentWidget());
-}
-
-void MainWindow::startAction()
+void MainWindow::startServerAction()
 {
     bool currentEditorConnected = currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState;
     if (!currentEditorConnected) {
@@ -360,13 +352,17 @@ void MainWindow::startAction()
                                                      tr("Port:"), QLineEdit::Normal);
             if (portInput >= 1000 && portInput <= 9999) {
                 currentEditor->editorServer->startServer(portInput);
-                currentEditor->editorSocket->connectToHost(QHostAddress::Any, portInput);
-                if (!currentEditor->editorSocket->waitForConnected())
-                    QMessageBox::information(this, tr(""), QString("Error: Unable to connect to host"));
-                else {
-                    currentEditor->connectedPort = portInput;
-                    qDebug() << "Connected to host";
+                if (currentEditor->editorServer->isListening()) {
+                    currentEditor->editorSocket->connectToHost(QHostAddress::Any, portInput);
+                    if (!currentEditor->editorSocket->waitForConnected())
+                        QMessageBox::information(this, tr(""), QString("Error: Unable to connect to host"));
+                    else {
+                        currentEditor->connectedPort = portInput;
+                        qDebug() << "Connected to host";
+                    }
                 }
+                else
+                    QMessageBox::information(this, "", QString("Error: Could not start server on port " + QString::number(portInput)));
             }
             else
                 QMessageBox::information(this, tr(""), QString("Error: Invalid server port " + QString::number(portInput)));
@@ -378,6 +374,14 @@ void MainWindow::startAction()
     }
     else if (currentEditorConnected)
         QMessageBox::information(this, tr(""), QString("Error: Already connected to a server"));
+    updateNetworkMenuOptions();
+}
+
+void MainWindow::closeServerAction()
+{
+    if (currentEditor->editorServer->isListening()) {
+        currentEditor->editorServer->close();
+    }
 }
 
 void MainWindow::connectAction()
@@ -392,6 +396,7 @@ void MainWindow::connectAction()
                 QMessageBox::information(this, tr(""), QString("Error: Unable to connect to host"));
             else {
                 currentEditor->connectedPort = portInput;
+                updateNetworkMenuOptions();
                 qDebug() << "Connected to host";
             }
         }
@@ -404,6 +409,14 @@ void MainWindow::connectAction()
     }
     else
         QMessageBox::information(this, tr(""), QString("Error: Connection failed"));
+}
+
+void MainWindow::disconnectAction()
+{
+    qDebug() << "diso";
+    if (!currentEditor->editorServer->isListening() && currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState)
+        currentEditor->editorSocket->close();
+    updateNetworkMenuOptions();
 }
 
 void MainWindow::connectionInfoAction()
@@ -420,6 +433,23 @@ void MainWindow::updateHighlightingAction(int index)
 {
     qDebug() << syntaxHighlightingActs.at(index)->text();
     highlightingButton->setDefaultAction(syntaxHighlightingActs.at(index));
+}
+
+void MainWindow::updateNetworkMenuOptions()
+{
+    bool serverRunning = currentEditor->editorServer->isListening();
+    // Start Server option
+    networkMenu->actions().at(0)->setEnabled(!serverRunning);
+    // Close Server option
+    networkMenu->actions().at(1)->setEnabled(serverRunning);
+    bool clientConnected = currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState;
+    // Connect to a Server option
+    networkMenu->actions().at(2)->setEnabled(!clientConnected);
+    // Disconnect from Server option
+    if (!serverRunning && clientConnected)
+        networkMenu->actions().at(3)->setEnabled(true);
+    else
+        networkMenu->actions().at(3)->setEnabled(false);
 }
 
 #include <QCloseEvent>
