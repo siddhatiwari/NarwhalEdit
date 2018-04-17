@@ -328,6 +328,7 @@ void MainWindow::createTabBar()
     tabBar = new TabBar();
     connect(tabBar, &TabBar::currentChanged, [this]() {
         currentEditor = qobject_cast<CodeEditor *>(tabBar->currentWidget());
+        lineNumberLabel->setText("Line: " + QString::number(currentEditor->getCurrentLine()));
         updateNetworkMenuOptions();
     });
 }
@@ -370,6 +371,7 @@ void MainWindow::closeServerAction()
 {
     if (currentEditor->editorServer->isListening()) {
         currentEditor->editorServer->close();
+        currentEditor->editorSocket->close();
         updateNetworkMenuOptions();
     }
 }
@@ -403,8 +405,10 @@ void MainWindow::connectAction()
 
 void MainWindow::disconnectAction()
 {
-    if (!currentEditor->editorServer->isListening() && currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState)
+    if (!currentEditor->editorServer->isListening() && currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState) {
         currentEditor->editorSocket->close();
+        currentEditor->connectedPort = 0;
+    }
     updateNetworkMenuOptions();
 }
 

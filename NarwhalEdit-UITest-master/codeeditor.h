@@ -30,6 +30,7 @@ public:
     int connectedPort = 0;
     bool getDocumentSaved();
     void setDocumentSaved(bool saved);
+    int getCurrentLine();
 
 private:
     void setupEditor();
@@ -44,6 +45,7 @@ private:
     QString textUnderCursor() const;
     QCompleter *cmpltr;
     bool documentSaved = false;
+    int currentLine = 1;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

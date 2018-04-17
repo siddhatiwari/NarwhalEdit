@@ -73,6 +73,11 @@ void CodeEditor::setDocumentSaved(bool saved)
     documentSaved = saved;
 }
 
+int CodeEditor::getCurrentLine()
+{
+    return currentLine;
+}
+
 int CodeEditor::lineNumberAreaWidth()
 {
     int digits = 1;
@@ -306,7 +311,6 @@ QString CodeEditor::textUnderCursor() const
     return tc.selectedText();
 }
 
-
 void CodeEditor::focusInEvent(QFocusEvent *e)
 {
     if (cmpltr)
@@ -367,5 +371,6 @@ void CodeEditor::calculateNewLineNumber()
             newLineCount++;
     }
 
+    currentLine = newLineCount + 1;
     emit updateLineNumber(newLineCount + 1);
 }
