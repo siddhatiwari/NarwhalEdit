@@ -75,9 +75,5 @@ bool TabBar::quitRequested()
     for (int i = 0; i < count(); i++) {
         quitConfirmed = handleTabCloseRequest(i);
     }
-
-    if (quitConfirmed)
-        QApplication::quit();
-    else
-        return false;
+    return quitConfirmed;
 }

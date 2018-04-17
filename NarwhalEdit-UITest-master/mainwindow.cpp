@@ -20,17 +20,8 @@ MainWindow::MainWindow()
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
 
-    QWidget *topFiller = new QWidget;
-    topFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-    infoLabel = new QLabel(tr("<i>Choose a menu option, or right-click to "
-                              "invoke a context menu</i>"));
-    infoLabel->setFrameStyle(QFrame::StyledPanel | QFrame::Box);
-    infoLabel->setAlignment(Qt::AlignCenter);
-
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->setMargin(5);
-    layout->addWidget(infoLabel);
+    layout->setMargin(0);
     widget->setLayout(layout);
 
     setupStatusBar();
@@ -42,11 +33,14 @@ MainWindow::MainWindow()
     CodeEditor *codeEditor = new CodeEditor();
     createTab(codeEditor);
 
-    setWindowTitle(tr("Menus"));
+    setWindowTitle(tr("NarwhalEdit"));
     setMinimumSize(160, 160);
-    QRect screen = QApplication::desktop()->screenGeometry();
-    resize(screen.width(), screen.height());
 
+    QRect screen = QApplication::desktop()->screenGeometry();
+    QSettings settings;
+    settings.beginGroup("MainWindow");
+    resize(settings.value("size", screen.size()).toSize());
+    settings.endGroup();
 }
 
 #ifndef QT_NO_CONTEXTMENU
@@ -70,8 +64,6 @@ void MainWindow::createTab(CodeEditor *codeEditor, QString title)
 
 void MainWindow::newFile()
 {
-    infoLabel->setText(tr("Invoked <b>File|New</b>"));
-
     qDebug() << "1";
 
     CodeEditor *codeEditor = new CodeEditor();
@@ -82,7 +74,6 @@ void MainWindow::newFile()
 
 void MainWindow::open()
 {
-    infoLabel->setText(tr("Invoked <b>File|Open</b>"));
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), tr("Text File (*.txt)"));
 
     if (fileName.isEmpty())
@@ -122,8 +113,6 @@ void MainWindow::open()
 
 void MainWindow::save()
 {
-    infoLabel->setText(tr("Invoked <b>File|Save</b>"));
-
     if (tabBar->count() > 0) {
         QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("Text (*.txt);;All Files (*)"));
         if (fileName.isEmpty())
@@ -180,7 +169,7 @@ void MainWindow::paste()
 
 void MainWindow::setLineSpacing()
 {
-    infoLabel->setText(tr("Invoked <b>Edit|Format|Set Line Spacing</b>"));
+
 }
 
 void MainWindow::about()
@@ -381,6 +370,7 @@ void MainWindow::closeServerAction()
 {
     if (currentEditor->editorServer->isListening()) {
         currentEditor->editorServer->close();
+        updateNetworkMenuOptions();
     }
 }
 
@@ -454,8 +444,19 @@ void MainWindow::updateNetworkMenuOptions()
 #include <QCloseEvent>
 void MainWindow::closeEvent (QCloseEvent *event)
 {
-    if (tabBar->quitRequested())
+    if (tabBar->quitRequested()) {
+        QSettings settings;
+        settings.beginGroup("MainWindow");
+        settings.setValue("size", size());
+        settings.endGroup();
         event->accept();
+    }
     else
         event->ignore();
 }
+
+void MainWindow::saveWindowSize()
+{
+    QXmlStreamReader xmlReader();
+}
+
