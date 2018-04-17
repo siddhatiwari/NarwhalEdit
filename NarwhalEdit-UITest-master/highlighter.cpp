@@ -21,17 +21,17 @@ Highlighter::Highlighter(QTextDocument *parent, Language *language)
     rule.format = classFormat;
     highlightingRules.append(rule);
 
+    quotationFormat.setForeground(Qt::darkGreen);
+    rule.pattern = QRegularExpression("\".*\"");
+    rule.format = quotationFormat;
+    highlightingRules.append(rule);
+
     singleLineCommentFormat.setForeground(Qt::red);
     rule.pattern = language->getSingleLineRegularExpression();
     rule.format = singleLineCommentFormat;
     highlightingRules.append(rule);
 
     multiLineCommentFormat.setForeground(Qt::red);
-
-    quotationFormat.setForeground(Qt::darkGreen);
-    rule.pattern = QRegularExpression("\".*\"");
-    rule.format = quotationFormat;
-    highlightingRules.append(rule);
 
     functionFormat.setFontItalic(true);
     functionFormat.setForeground(Qt::blue);

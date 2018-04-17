@@ -14,7 +14,7 @@ C_Plus_Plus::C_Plus_Plus()
                                          << "\\bvoid\\b" << "\\bvolatile\\b" << "\\bbool\\b";
     this->commentStartExpression = QRegularExpression("/\\*");
     this->commentEndExpression = QRegularExpression("\\*/");
-    this->singleLineRegularExpression= QRegularExpression("//(([^\n]*[^\"]*\"[^\"]*\")*[^\"]*$)*"); //(?=([^\"]*\"[^\"]*\")*[^\"]*$)
+    this->singleLineRegularExpression= QRegularExpression("(?=([^\"]*\"[^\"]*\")*[^\"]*$)//[^\n]*"); //(?=([^\"]*\"[^\"]*\")*[^\"]*$)
 }
 //[^\n]*
 //([^\n]*[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*
