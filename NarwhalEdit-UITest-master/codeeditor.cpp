@@ -4,6 +4,8 @@
 #include <algorithm>
 #include "codeeditor.h"
 #include "mainwindow.h"
+#include "language.h"
+#include "c_plus_plus.h"
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -32,7 +34,7 @@ void CodeEditor::setupEditor()
     lineNumberArea = new LineNumberArea(this);
 
     // Sets up highlighter
-    highlighter = new Highlighter(document());
+    highlighter = new Highlighter(document(), new C_Plus_Plus());//jishdjfkgdskjhfgdsjfgk
 
     // Sets up autocompleter
     QCompleter *cmp = new QCompleter(this->parent());

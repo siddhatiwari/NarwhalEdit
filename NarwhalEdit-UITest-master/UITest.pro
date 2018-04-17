@@ -31,14 +31,18 @@ SOURCES += \
     tabbar.cpp \
     codeeditor.cpp \
     highlighter.cpp \
-    server.cpp
+    server.cpp \
+    language.cpp \
+    c_plus_plus.cpp
 
 HEADERS += \
         mainwindow.h \
     tabbar.h \
     codeeditor.h \
     highlighter.h \
-    server.h
+    server.h \
+    language.h \
+    c_plus_plus.h
 
 FORMS += \
         mainwindow.ui
