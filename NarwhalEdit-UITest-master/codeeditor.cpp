@@ -43,6 +43,10 @@ void CodeEditor::setupEditor()
 
     editorSocket = new QTcpSocket();
     connect(editorSocket, SIGNAL(readyRead()), this, SLOT(updateText()));
+    connect(editorSocket, &QTcpSocket::disconnected, [this]() {
+       QMessageBox::information(this, "", QString("Disconnected from server on port "
+                                                  + QString::number(connectedPort))) ;
+    });
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
