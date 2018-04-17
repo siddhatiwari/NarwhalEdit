@@ -49,24 +49,21 @@ bool TabBar::handleTabCloseRequest(int tabIndex)
         int response =  QMessageBox::question(
                     this, "", QString("There are editor server(s) open, do you still want to close?"),
                     QMessageBox::Yes | QMessageBox::No);
-        if (response == QMessageBox::Yes)
-            return true;
+        return response == QMessageBox::Yes;
     }
 
     if (connectionsOpen) {
         int response =  QMessageBox::question(
                     this, "", QString("There are editor connection(s) open, do you still want to close?"),
                     QMessageBox::Yes | QMessageBox::No);
-        if (response == QMessageBox::Yes)
-            return true;
+        return response == QMessageBox::Yes;
     }
 
     if (unsavedDocuments) {
         int response =  QMessageBox::question(
                     this, "", QString("There are unsaved documents open, do you still want to close?"),
                     QMessageBox::Yes | QMessageBox::No);
-        if (response == QMessageBox::Yes)
-            return true;
+        return response == QMessageBox::Yes;
     }
 
     return false;
@@ -74,7 +71,6 @@ bool TabBar::handleTabCloseRequest(int tabIndex)
 
 bool TabBar::quitRequested()
 {
-
     bool quitConfirmed = false;
     for (int i = 0; i < count(); i++) {
         quitConfirmed = handleTabCloseRequest(i);
