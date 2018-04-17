@@ -46,25 +46,21 @@ bool TabBar::handleTabCloseRequest(int tabIndex)
         if (!currentEditor->getDocumentSaved())
             unsavedDocuments = true;
 
+        QMessageBox *message = new QMessageBox();
+        message->addButton(QMessageBox::Yes);
+        message->addButton(QMessageBox::No);
+        message->setDefaultButton(QMessageBox::Yes);
         if (serversOpen) {
-            int response =  QMessageBox::question(
-                        this, "", QString("There are editor server(s) open, do you still want to close?"),
-                        QMessageBox::Yes | QMessageBox::No);
-            return response == QMessageBox::Yes;
+            message->setText("There are editor server(s) open, do you still want to close?");
+            return message->exec() == QMessageBox::Yes;
         }
-
         if (connectionsOpen) {
-            int response =  QMessageBox::question(
-                        this, "", QString("There are editor connection(s) open, do you still want to close?"),
-                        QMessageBox::Yes | QMessageBox::No);
-            return response == QMessageBox::Yes;
+            message->setText("There are editor connection(s) open, do you still want to close?");
+            return message->exec() == QMessageBox::Yes;
         }
-
         if (unsavedDocuments) {
-            int response =  QMessageBox::question(
-                        this, "", QString("There are unsaved documents open, do you still want to close?"),
-                        QMessageBox::Yes | QMessageBox::No);
-            return response == QMessageBox::Yes;
+            message->setText("There are unsaved documents open, do you still want to close?");
+            return message->exec() == QMessageBox::Yes;
         }
 
         return false;
