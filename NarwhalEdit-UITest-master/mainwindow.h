@@ -55,7 +55,6 @@ private:
     void createTab(CodeEditor *codeEditor, QString title = "New Tab");
     void closeEvent(QCloseEvent *bar) override;
     void updateNetworkMenuOptions();
-    void saveWindowSize();
 
     TabBar *tabBar;
     CodeEditor *currentEditor;

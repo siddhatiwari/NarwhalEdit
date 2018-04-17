@@ -13,6 +13,7 @@ public:
     ~Server();
     void startServer(int port);
     std::vector<QTcpSocket *> sockets;
+    int connections = 0;
 
 signals:
     void dataReceived(QByteArray data, QTcpSocket *sender);

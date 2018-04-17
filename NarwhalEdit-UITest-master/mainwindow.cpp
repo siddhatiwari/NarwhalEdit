@@ -413,7 +413,10 @@ void MainWindow::connectionInfoAction()
     QMessageBox messageBox;
     QString hosting = currentEditor->editorServer->isListening() ? "true" : "false";
     QString port = currentEditor->connectedPort == 0 ? "N/A" : QString::number(currentEditor->connectedPort);
-    QString text = QString("Hosting file: " + hosting + "\n" + "Connected port: " + port);
+    QString connections = !currentEditor->editorServer->isListening() ? "N/A" : QString::number(currentEditor->editorServer->connections);
+
+    QString text = QString("Hosting file: " + hosting + "\n" + "Connected port: " + port + "\n" +
+                           "Server connections: " + connections);
     messageBox.setText(text);
     messageBox.exec();
 }
@@ -454,9 +457,3 @@ void MainWindow::closeEvent (QCloseEvent *event)
     else
         event->ignore();
 }
-
-void MainWindow::saveWindowSize()
-{
-    QXmlStreamReader xmlReader();
-}
-

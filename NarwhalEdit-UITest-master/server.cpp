@@ -31,6 +31,7 @@ void Server::newConnection()
         connect(socket, SIGNAL(disconnected()), SLOT(disconnected()));
 
         sockets.push_back(socket);
+        connections++;
     }
 }
 
@@ -38,6 +39,7 @@ void Server::disconnected()
 {
     QTcpSocket *socket = static_cast<QTcpSocket *>(sender());
     socket->deleteLater();
+    connections--;
 }
 
 void Server::readyRead()

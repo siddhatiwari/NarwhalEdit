@@ -271,7 +271,7 @@ void CodeEditor::findCompletionKeywords()
 void CodeEditor::setCompleter(QCompleter *completer)
 {
     if (cmpltr) {
-        cmpltr->popup()->setMaximumSize(0, 0);
+        cmpltr->popup()->hide();
         QObject::disconnect(cmpltr, 0, this, 0);
     }
 
