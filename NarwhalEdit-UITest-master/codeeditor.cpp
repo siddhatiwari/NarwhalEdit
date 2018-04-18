@@ -58,6 +58,9 @@ void CodeEditor::setupEditor()
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
+    connect(this, &CodeEditor::cursorPositionChanged, [this]() {
+        highlightCurrentLine();
+    });
     connect(this, SIGNAL(textChanged()), this, SLOT(rehighlight()));
     connect(this, SIGNAL(textChanged()), this, SLOT(completeText()));
     connect(this, SIGNAL(textChanged()), this, SLOT(findCompletionKeywords()));
