@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/Files">
         <file>TabBarStyleSheet.qss</file>
+        <file>DarkTabBarStyleSheet.qss</file>
     </qresource>
 </RCC>

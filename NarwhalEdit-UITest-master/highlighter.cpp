@@ -5,7 +5,7 @@ Highlighter::Highlighter(QTextDocument *parent, Language *language)
     : QSyntaxHighlighter(parent)
 {
     HighlightingRule rule;
-    keywordFormat.setForeground(Qt::darkBlue);
+    keywordFormat.setForeground(QColor(255, 128, 0));
     keywordFormat.setFontWeight(QFont::Bold);
     QStringList keywordPatterns;
     keywordPatterns<<language->getKeywordPatterns();
@@ -16,12 +16,12 @@ Highlighter::Highlighter(QTextDocument *parent, Language *language)
     }
 
     classFormat.setFontWeight(QFont::Bold);
-    classFormat.setForeground(Qt::darkMagenta);
+    classFormat.setForeground(QColor(153, 51, 255));
     rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b");
     rule.format = classFormat;
     highlightingRules.append(rule);
 
-    quotationFormat.setForeground(Qt::darkGreen);
+    quotationFormat.setForeground(QColor(0, 204, 102));
     rule.pattern = QRegularExpression("\".*\"");
     rule.format = quotationFormat;
     highlightingRules.append(rule);
@@ -34,7 +34,7 @@ Highlighter::Highlighter(QTextDocument *parent, Language *language)
     multiLineCommentFormat.setForeground(Qt::red);
 
     functionFormat.setFontItalic(true);
-    functionFormat.setForeground(Qt::blue);
+    functionFormat.setForeground(QColor(51, 153, 255));
     rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()");
     rule.format = functionFormat;
     highlightingRules.append(rule);

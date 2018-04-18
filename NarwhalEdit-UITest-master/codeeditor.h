@@ -30,6 +30,7 @@ public:
     bool getDocumentSaved();
     void setDocumentSaved(bool saved);
     int getCurrentLine();
+    void highlightCurrentLine();
 
 private:
     void setupEditor();
@@ -64,7 +65,6 @@ private slots:
      * @param none
      * @return void
      */
-    void highlightCurrentLine();
 
     void updateLineNumberArea(const QRect &, int);
 

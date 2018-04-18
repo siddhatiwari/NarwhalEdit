@@ -5,6 +5,7 @@
 #include "codeeditor.h"
 #include "mainwindow.h"
 #include "c_plus_plus.h"
+#include "globals.h"
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -17,6 +18,7 @@ CodeEditor::~CodeEditor()
 
 void CodeEditor::setupEditor()
 {
+
     // Sets tab
     QFont font;
     font.setFamily("Courier");
@@ -56,7 +58,6 @@ void CodeEditor::setupEditor()
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
-    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
     connect(this, SIGNAL(textChanged()), this, SLOT(rehighlight()));
     connect(this, SIGNAL(textChanged()), this, SLOT(completeText()));
     connect(this, SIGNAL(textChanged()), this, SLOT(findCompletionKeywords()));
@@ -129,7 +130,11 @@ void CodeEditor::highlightCurrentLine()
     if (!isReadOnly()) {
         QTextEdit::ExtraSelection selection;
 
-        QColor lineColor = QColor(Qt::yellow).lighter(160);
+        QColor lineColor;
+        if (whiteTheme)
+            lineColor = QColor(Qt::yellow).lighter(170);
+        else
+            lineColor = QColor(64, 64, 64);
 
         selection.format.setBackground(lineColor);
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
@@ -144,7 +149,10 @@ void CodeEditor::highlightCurrentLine()
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(lineNumberArea);
-    painter.fillRect(event->rect(), Qt::lightGray);
+    if (!whiteTheme)
+        painter.fillRect(event->rect(), QColor(32, 32, 32));
+    else
+        painter.fillRect(event->rect(), Qt::lightGray);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
@@ -154,7 +162,11 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
-            painter.setPen(Qt::black);
+            if (!whiteTheme)
+                painter.setPen(QColor(150, 150, 150));
+            else
+                painter.setPen(Qt::darkGray);
+            painter.setFont(font());
             painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, number);
         }
@@ -273,7 +285,7 @@ void CodeEditor::findCompletionKeywords()
     currentText = currentText.mid(0, typedStart) + currentText.mid(typedEnd);
     QStringList wordList;
     QString tempKeyword;
-    qDebug() << currentText;
+    //qDebug() << currentText;
     for (int i = 0; i < currentText.size(); i++) {
         if (std::find(excludeChars.begin(), excludeChars.end(), currentText[i]) != std::end(excludeChars)) {
             if (!wordList.contains(tempKeyword))

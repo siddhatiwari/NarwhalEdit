@@ -3,11 +3,13 @@
 
 #include <QWidget>
 #include <QTabWidget>
+#include <QStylePainter>
+#include <QStyleOptionTab>
 #include "codeeditor.h"
 
 class TabBar : public QTabWidget
 {
-
+    QVector<int> mUnSaved;
 public:
     TabBar();
     ~TabBar();
@@ -18,6 +20,7 @@ public:
 
 private slots:
     bool handleCloseRequested(int tabIndex);
+
 };
 
 #endif // TABBAR_H

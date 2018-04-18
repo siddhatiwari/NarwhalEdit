@@ -4,6 +4,10 @@
 #
 #-------------------------------------------------
 
+TEMPLATE = app
+
+LIBS += -framework AppKit -framework Foundation
+
 QT       += core gui
 QT += network
 QT += widgets
@@ -33,7 +37,8 @@ SOURCES += \
     highlighter.cpp \
     server.cpp \
     language.cpp \
-    c_plus_plus.cpp
+    c_plus_plus.cpp \
+    globals.mm
 
 HEADERS += \
         mainwindow.h \
@@ -42,13 +47,11 @@ HEADERS += \
     highlighter.h \
     server.h \
     language.h \
-    c_plus_plus.h
+    c_plus_plus.h \
+    globals.h
 
 FORMS += \
         mainwindow.ui
-
-DISTFILES += \
-    TabBarStyleSheet.qss
 
 RESOURCES += \
     resources.qrc

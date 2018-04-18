@@ -20,7 +20,8 @@ TabBar::~TabBar()
 
 void TabBar::createEditorTab(CodeEditor *codeEditor, QString title)
 {
-    this->addTab(codeEditor, title);
+    addTab(codeEditor, title);
+//    tabBar()->tabRect(currentIndex()).
 }
 
 bool TabBar::handleCloseRequested(int tabIndex)
@@ -59,7 +60,7 @@ bool TabBar::handleTabCloseRequest(int tabIndex)
             return message->exec() == QMessageBox::Yes;
         }
         if (unsavedDocuments) {
-            message->setText("There are unsaved documents open, do you still want to close?");
+            message->setText("There are unsaved document(s) open, do you still want to close?");
             return message->exec() == QMessageBox::Yes;
         }
 

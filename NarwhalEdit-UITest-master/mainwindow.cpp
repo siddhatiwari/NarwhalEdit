@@ -14,9 +14,17 @@
 #include <QBoxLayout>
 #include "mainwindow.h"
 #include "codeeditor.h"
+#include "globals.h"
 
 MainWindow::MainWindow()
 {
+    if (!whiteTheme) {
+        QPalette p = palette();
+        p.setColor(QPalette::Base, QColor(32, 32, 32));
+        p.setColor(QPalette::Text, QColor(230, 230, 230));
+        setPalette(p);
+    }
+
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
 
@@ -64,12 +72,8 @@ void MainWindow::createTab(CodeEditor *codeEditor, QString title)
 
 void MainWindow::newFile()
 {
-    qDebug() << "1";
-
     CodeEditor *codeEditor = new CodeEditor();
     createTab(codeEditor);
-
-    qDebug() << "2";
 }
 
 void MainWindow::open()
@@ -259,6 +263,14 @@ void MainWindow::createActions()
     connectAct->setStatusTip(tr("Check your Server and Client connection information"));
     connect(connectionInfoAct, SIGNAL(triggered(bool)), this, SLOT(connectionInfoAction()));
 
+    darkThemeAct = new QAction(tr("Dark Theme"), this);
+    darkThemeAct->setStatusTip(tr("Sets the editor theme to Dark"));
+    connect(darkThemeAct, SIGNAL(triggered(bool)), this, SLOT(darkThemeAction()));
+
+    defaultThemeAct = new QAction(tr("Default Theme"), this);
+    defaultThemeAct->setStatusTip(tr("Sets the editor theme to Default"));
+    connect(defaultThemeAct, SIGNAL(triggered(bool)), this, SLOT(defaultThemeAction()));
+
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
@@ -266,6 +278,8 @@ void MainWindow::createActions()
     aboutQtAct = new QAction(tr("About &Qt"), this);
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
     connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
+
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this, SLOT(ctrlWAction()));
 }
 
 void MainWindow::createMenus()
@@ -303,6 +317,10 @@ void MainWindow::createMenus()
     editMenu->addAction(copyAct);
     editMenu->addAction(pasteAct);
     editMenu->addSeparator();
+
+    viewMenu = menuBar()->addMenu(tr("&View"));
+    viewMenu->addAction(darkThemeAct);
+    viewMenu->addAction(defaultThemeAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
@@ -410,6 +428,34 @@ void MainWindow::connectionInfoAction()
                            "Server connections: " + connections);
     messageBox.setText(text);
     messageBox.exec();
+}
+
+void MainWindow::darkThemeAction()
+{
+    setTheme(false);
+    for (int i = 0; i < tabBar->count(); i++) {
+        CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
+        editor->highlightCurrentLine();
+    }
+    qApp->processEvents();
+}
+
+void MainWindow::defaultThemeAction()
+{
+    setTheme(true);
+    for (int i = 0; i < tabBar->count(); i++) {
+        CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
+        editor->highlightCurrentLine();
+    }
+    qApp->processEvents();
+}
+
+void MainWindow::ctrlWAction()
+{
+    if (tabBar->handleTabCloseRequest(tabBar->currentIndex()))
+        tabBar->close();
+    if (tabBar->count() == 0)
+        QApplication::quit();
 }
 
 void MainWindow::updateHighlightingAction(int index)

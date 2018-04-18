@@ -42,6 +42,9 @@ private slots:
     void connectAction();
     void disconnectAction();
     void connectionInfoAction();
+    void darkThemeAction();
+    void defaultThemeAction();
+    void ctrlWAction();
     void updateHighlightingAction(int index);
 
 private:
@@ -62,6 +65,7 @@ private:
     QMenu *syntaxMenu;
     QMenu *fileMenu;
     QMenu *networkMenu;
+    QMenu *viewMenu;
     QMenu *editMenu;
     QMenu *helpMenu;
     QActionGroup *alignmentGroup;
@@ -80,6 +84,8 @@ private:
     QAction *connectAct;
     QAction *disconnectAct;
     QAction *connectionInfoAct;
+    QAction *darkThemeAct;
+    QAction *defaultThemeAct;
     QAction *aboutAct;
     QAction *aboutQtAct;
 

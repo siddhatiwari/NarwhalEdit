@@ -1,10 +1,5 @@
-QPlainTextEdit {
-    background: white;
-    color: black;
-}
-
 QTabWidget::pane {
-    background: white;
+    background: black;
 }
 
 QTabWidget::tab-bar:top {
@@ -12,10 +7,19 @@ QTabWidget::tab-bar:top {
 }
 
 QTabWidget::tab-bar:bottom {
-    bottom: 2px;
+    bottom: -2px;
 }
 
-QTabWidget::tab-bar:left {
+QMainWindow {
+    background: black;
+}
+
+QPlainTextEdit {
+    background: rgb(32, 32, 32);
+    color: rgb(230, 230, 230);
+}
+
+TabWidget::tab-bar:left {
     right: 2px;
 }
 
@@ -23,28 +27,27 @@ QTabWidget::tab-bar:right {
     left: 2px;
 }
 
-QTabBar::tab {
-    border: 0.5px solid lightGray;
-}
-
 QTabBar::tab:selected {
-    background: white;
+    background: rgb(32, 32, 32);
+    color: rgb(230, 230, 230);
 }
 
 QTabBar::tab:!selected {
-    background: silver;
+    background: rgb(10, 10, 10);
+    border: 0.1px solid rgb(32, 32, 32);
+    color: rgb(150, 150, 150);
 }
 
 QTabBar::tab:!selected:hover {
-    background: #999;
+    background: rgb(32, 32, 32);
 }
 
 QTabBar::tab:top:!selected {
-    margin-top: 3px;
+    margin-top: 2px;
 }
 
 QTabBar::tab:bottom:!selected {
-    margin-bottom: 3px;
+    margin-bottom: 2px;
 }
 
 QTabBar::tab:top, QTabBar::tab:bottom {

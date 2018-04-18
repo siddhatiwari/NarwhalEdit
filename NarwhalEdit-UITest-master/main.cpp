@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QDir>
+#include "globals.h"
 
 int main(int argc, char *argv[])
 {
@@ -10,14 +11,12 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationName("Siddha Tiwari");
     QApplication::setApplicationName("NarwhalEdit");
 
-    QFile file(":/Files/TabBarStyleSheet.qss");
-    qDebug() << file.bytesAvailable();
-    if(file.open(QFile::ReadOnly)) {
-        QString StyleSheet = QLatin1String(file.readAll());
-        qApp->setStyleSheet(StyleSheet);
-    }
-    MainWindow w;
-    w.show();
+    MainWindow *w = new MainWindow();
+    mainWindow = w;
+
+    setTheme(true);
+
+    w->show();
 
     return a.exec();
 }
