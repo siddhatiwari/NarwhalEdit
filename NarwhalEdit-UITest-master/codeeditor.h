@@ -27,6 +27,7 @@ public:
     Server *editorServer;
     QTcpSocket *editorSocket;
     int connectedPort = 0;
+    QString filePath = "";
     bool getDocumentSaved();
     void setDocumentSaved(bool saved);
     int getCurrentLine();

@@ -30,6 +30,7 @@ private slots:
     void newFile();
     void open();
     void save();
+    void saveAs();
     void undo();
     void redo();
     void cut();
@@ -73,6 +74,7 @@ private:
     QAction *newAct;
     QAction *openAct;
     QAction *saveAct;
+    QAction *saveAsAct;
     QAction *exitAct;
     QAction *undoAct;
     QAction *redoAct;

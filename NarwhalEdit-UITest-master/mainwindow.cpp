@@ -80,6 +80,14 @@ void MainWindow::open()
         return;
     else {
 
+        for (int i = 0; i < tabBar->count(); i++) {
+            CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
+            if (editor->filePath == fileName) {
+                tabBar->setCurrentIndex(i);
+                return;
+            }
+        }
+
         QFile file(fileName);
         if(!file.open(QIODevice::ReadOnly)) {
             QMessageBox::information(this, tr("Unable to open file"), file.errorString());
@@ -101,7 +109,8 @@ void MainWindow::open()
 
         CodeEditor *codeEditor = new CodeEditor();
         codeEditor->document()->setPlainText(text);
-
+        codeEditor->setDocumentSaved(true);
+        codeEditor->filePath = fileName;
         QFileInfo fileInfo(fileName);
         createTab(codeEditor, fileInfo.fileName());
 
@@ -111,7 +120,39 @@ void MainWindow::open()
 void MainWindow::save()
 {
     if (tabBar->count() > 0) {
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("Text (*.txt);;All Files (*)"));
+        qDebug() << currentEditor->filePath;
+        if(currentEditor->filePath == "")
+            saveAs();
+        else {
+
+            QFile file(currentEditor->filePath);
+            if (!file.open(QIODevice::WriteOnly)) {
+                QMessageBox::information(this, tr("Unable to open file"), file.errorString());
+                return;
+            }
+
+            QTextStream out(&file);
+            out << currentEditor->toPlainText();
+
+            file.flush();
+            file.close();
+
+            QString fileName = currentEditor->filePath;
+            QFileInfo fileInfo(fileName);
+            int currentIndex = tabBar->currentIndex();
+            tabBar->setTabText(currentIndex, fileInfo.fileName());
+            currentEditor->setDocumentSaved(true);
+            currentEditor->filePath = fileName;
+
+        }
+    }
+}
+
+void MainWindow::saveAs()
+{
+    if (tabBar->count() > 0) {
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"));
+        qDebug() << fileName;
         if (fileName.isEmpty())
             return;
         else {
@@ -122,9 +163,7 @@ void MainWindow::save()
                 return;
             }
 
-            QDataStream out(&file);
-            CodeEditor *currentEditor = qobject_cast<CodeEditor *>(tabBar->currentWidget());
-
+            QTextStream out(&file);
             out << currentEditor->toPlainText();
 
             file.flush();
@@ -134,6 +173,7 @@ void MainWindow::save()
             int currentIndex = tabBar->currentIndex();
             tabBar->setTabText(currentIndex, fileInfo.fileName());
             currentEditor->setDocumentSaved(true);
+            currentEditor->filePath = fileName;
         }
 
     }
@@ -211,9 +251,14 @@ void MainWindow::createActions()
     connect(openAct, &QAction::triggered, this, &MainWindow::open);
 
     saveAct = new QAction(tr("&Save"), this);
-    saveAct->setShortcuts(QKeySequence::Save);
+    saveAct->setShortcut(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the document to disk"));
     connect(saveAct, &QAction::triggered, this, &MainWindow::save);
+
+    saveAsAct = new QAction(tr("&Save As"), this);
+    saveAsAct->setShortcuts(QKeySequence::SaveAs);
+    saveAsAct->setStatusTip(tr("Save the document to disk with a file name"));
+    connect(saveAsAct, &QAction::triggered, this, &MainWindow::saveAs);
 
     undoAct = new QAction(tr("&Undo"), this);
     undoAct->setShortcuts(QKeySequence::Undo);
@@ -299,6 +344,7 @@ void MainWindow::createMenus()
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
+    fileMenu->addAction(saveAsAct);
     fileMenu->addSeparator();
 
     networkMenu = menuBar()->addMenu(QString("Network"));
