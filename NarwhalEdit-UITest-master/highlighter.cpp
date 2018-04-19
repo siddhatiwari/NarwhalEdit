@@ -26,18 +26,18 @@ Highlighter::Highlighter(QTextDocument *parent, Language *language)
     rule.format = quotationFormat;
     highlightingRules.append(rule);
 
+    functionFormat.setFontItalic(true);
+    functionFormat.setForeground(QColor(51, 153, 255));
+    rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()");
+    rule.format = functionFormat;
+    highlightingRules.append(rule);
+
     singleLineCommentFormat.setForeground(Qt::red);
     rule.pattern = language->getSingleLineRegularExpression();
     rule.format = singleLineCommentFormat;
     highlightingRules.append(rule);
 
     multiLineCommentFormat.setForeground(Qt::red);
-
-    functionFormat.setFontItalic(true);
-    functionFormat.setForeground(QColor(51, 153, 255));
-    rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()");
-    rule.format = functionFormat;
-    highlightingRules.append(rule);
 
     commentStartExpression = language->getCommentStartExpression();
     commentEndExpression = language->getCommentEndExpression();
