@@ -73,6 +73,11 @@ QPlainTextEdit {
     color: rgb(240, 240, 240);
 }
 
+QAbstractItemView[accessibleName="completer-popup"] {
+    background: black;
+    color: rgb(240, 240, 240);
+}
+
 TabWidget::tab-bar:left {
     right: 2px;
 }

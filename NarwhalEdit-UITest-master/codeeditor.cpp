@@ -39,6 +39,7 @@ void CodeEditor::setupEditor()
 
     // Sets up autocompleter
     QCompleter *cmp = new QCompleter(this->parent());
+    cmp->popup()->setAccessibleName("completer-popup");
     cmpltr = cmp;
     cmpltr->setWidget(this);
     cmpltr->setCompletionMode(QCompleter::PopupCompletion);
