@@ -44,6 +44,7 @@ MainWindow::MainWindow()
     resize(settings.value("size", screen.size()).toSize());
     settings.endGroup();
 
+    setWindowTitle("NarwhalEdit - " + tabBar->tabText(tabBar->currentIndex()));
 }
 
 #ifndef QT_NO_CONTEXTMENU
@@ -332,6 +333,7 @@ void MainWindow::createTabBar()
     connect(tabBar, &TabBar::currentChanged, [this]() {
         currentEditor = qobject_cast<CodeEditor *>(tabBar->currentWidget());
         lineNumberLabel->setText("Line: " + QString::number(currentEditor->getCurrentLine()));
+        setWindowTitle("NarwhalEdit - " + tabBar->tabText(tabBar->currentIndex()));
         updateNetworkMenuOptions();
     });
 }

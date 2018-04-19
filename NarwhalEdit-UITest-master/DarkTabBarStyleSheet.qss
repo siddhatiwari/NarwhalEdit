@@ -70,7 +70,8 @@ QMenu[accessibleName="highlighting-menu"]:!selected {
 
 QPlainTextEdit {
     background: rgb(32, 32, 32);
-    color: rgb(240, 240, 240);
+    color: rgb(210, 210, 210);
+    selection-background-color: rgb(0, 77, 153);
 }
 
 QAbstractItemView[accessibleName="completer-popup"] {

@@ -16,14 +16,21 @@ MainWindow *mainWindow = 0;
 void setTheme(bool wTheme)
 {
     whiteTheme = wTheme;
+
+    #ifdef Q_OS_MAC
+
     QCoreApplication::setAttribute( Qt::AA_DontCreateNativeWidgetSiblings );
     NSView *nsview = ( __bridge NSView * )reinterpret_cast<void *>( mainWindow->window()->winId() );
     NSWindow *nswindow = [nsview window];
     QFile *file;
 
+    #endif
+
     if (!whiteTheme) {
 
         file = new QFile(":/Files/DarkTabBarStyleSheet.qss");
+
+        #ifdef Q_OS_MAC
 
         [nswindow setOpaque:NO];
         [nswindow invalidateShadow];
@@ -34,16 +41,22 @@ void setTheme(bool wTheme)
         //[nswindow setTitleVisibility:NSWindowTitleHidden];
         //[nswindow setStyleMask:NSFullSizeContentViewWindowMask];
         //mainWindow->statusBar()->setStyleSheet("background-color: rgb(0, 255, 0);");
+
+        #endif
     }
     else {
 
         file = new QFile(":/Files/TabBarStyleSheet.qss");
+
+        #ifdef Q_OS_MAC
 
         [nswindow setOpaque:NO];
         [nswindow invalidateShadow];
         nswindow.titlebarAppearsTransparent = true;
         nswindow.appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
         nswindow.backgroundColor = [NSColor colorWithCalibratedRed:200 green:200 blue:200 alpha:1.0f];
+
+        #endif
 
     }
 

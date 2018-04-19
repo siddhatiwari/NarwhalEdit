@@ -138,7 +138,7 @@ void CodeEditor::highlightCurrentLine()
         if (whiteTheme)
             lineColor = QColor(QColor(230, 247, 255));
         else
-            lineColor = QColor(64, 64, 64);
+            lineColor = QColor(48, 48, 48);
 
         selection.format.setBackground(lineColor);
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
@@ -377,6 +377,7 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
 
 void CodeEditor::calculateNewLineNumber()
 {
-    currentLine = (cursorRect().y() - 4) / cursorRect().size().height() + 1;
+    qDebug() << (cursorRect().y() - 4) << endl << cursorRect().size().height();
+    currentLine = firstVisibleBlock().blockNumber();
     emit updateLineNumber(currentLine);
 }
