@@ -26,7 +26,6 @@ void TabBar::createEditorTab(CodeEditor *codeEditor, QString title)
 
 bool TabBar::handleCloseRequested(int tabIndex)
 {
-    qDebug() << programExiting;
     if (handleTabCloseRequest(tabIndex))
         this->removeTab(tabIndex);
     if (count() == 0)

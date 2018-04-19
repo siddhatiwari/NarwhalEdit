@@ -21,10 +21,10 @@ void CodeEditor::setupEditor()
 
     // Sets tab
     QFont font;
-    font.setFamily("Courier");
+    font.setFamily("Monaco");
     font.setStyleHint(QFont::Monospace);
     font.setFixedPitch(true);
-    font.setPointSize(15);
+    font.setPointSize(13);
     setFont(font);
 
     // Sets tab size to 4 spaces
@@ -136,7 +136,7 @@ void CodeEditor::highlightCurrentLine()
 
         QColor lineColor;
         if (whiteTheme)
-            lineColor = QColor(Qt::yellow).lighter(170);
+            lineColor = QColor(QColor(230, 247, 255));
         else
             lineColor = QColor(64, 64, 64);
 

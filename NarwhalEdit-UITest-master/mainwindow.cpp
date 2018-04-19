@@ -73,7 +73,7 @@ void MainWindow::newFile()
 
 void MainWindow::open()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), tr("Text File (*.txt)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"));
 
     if (fileName.isEmpty())
         return;
@@ -85,19 +85,18 @@ void MainWindow::open()
             return;
         }
 
-        QDataStream in(&file);
+        QTextStream in(&file);
         QString text;
 
-        in >> text;
+        while (!in.atEnd())
+            text.append(in.readLine() + "\n");
 
         file.flush();
         file.close();
 
-        qDebug() << "1";
-
-        int currentTabIndex = tabBar->currentIndex();
-        if (currentEditor->document()->isEmpty() && tabBar->tabText(currentTabIndex) == "New Tab")
-            tabBar->removeTab(currentTabIndex);
+//        int currentTabIndex = tabBar->currentIndex();
+//        if (currentEditor->document()->isEmpty() && tabBar->tabText(currentTabIndex) == "New Tab")
+//            tabBar->removeTab(currentTabIndex);
 
         CodeEditor *codeEditor = new CodeEditor();
         codeEditor->document()->setPlainText(text);
