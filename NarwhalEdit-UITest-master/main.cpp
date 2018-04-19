@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
     settings.beginGroup("MainWindow");
     whiteTheme = settings.value("whiteTheme", true).toBool();
     MainWindow *w = new MainWindow();
+    w->setWindowIcon(QIcon(":/Files/NarwhalEditLogo.png"));
     mainWindow = w;
 
     setTheme(settings.value("whiteTheme", true).toBool());

@@ -281,7 +281,7 @@ void CodeEditor::findCompletionKeywords()
     QString currentText = toPlainText();
     int typedStart = -1;
     int typedEnd = textCursor().position();
-    for (int x = typedEnd; x >= 0; x--){
+    for (int x = typedEnd - 1; x >= 0; x--){
         if (std::find(excludeChars.begin(), excludeChars.end(), currentText[x]) != excludeChars.end()) {
             typedStart = x + 1;
             break;
@@ -289,9 +289,9 @@ void CodeEditor::findCompletionKeywords()
     }
 
     currentText = currentText.mid(0, typedStart) + currentText.mid(typedEnd);
+
     QStringList wordList;
     QString tempKeyword;
-    //qDebug() << currentText;
     for (int i = 0; i < currentText.size(); i++) {
         if (std::find(excludeChars.begin(), excludeChars.end(), currentText[i]) != std::end(excludeChars)) {
             if (!wordList.contains(tempKeyword))
