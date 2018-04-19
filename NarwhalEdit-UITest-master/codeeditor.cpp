@@ -92,12 +92,12 @@ int CodeEditor::lineNumberAreaWidth()
 {
     int digits = 1;
     int max = qMax(1, blockCount());
-    while (max >= 10) {
+    while (max >= 100) {
         max /= 10;
         ++digits;
     }
 
-    int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+    int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits + 15;
 
     return space;
 }
@@ -151,11 +151,13 @@ void CodeEditor::highlightCurrentLine()
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
+    QRect adjustedRect = event->rect();
+    adjustedRect.setWidth(event->rect().width());
     QPainter painter(lineNumberArea);
     if (!whiteTheme)
-        painter.fillRect(event->rect(), QColor(32, 32, 32));
+        painter.fillRect(adjustedRect, QColor(16, 16, 16));
     else
-        painter.fillRect(event->rect(), Qt::lightGray);
+        painter.fillRect(adjustedRect, QColor(240, 240, 240));
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
@@ -166,11 +168,11 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
             if (!whiteTheme)
-                painter.setPen(QColor(150, 150, 150));
+                painter.setPen(QColor(130, 130, 130));
             else
                 painter.setPen(Qt::darkGray);
             painter.setFont(font());
-            painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
+            painter.drawText(0, top, lineNumberArea->width() - 5, fontMetrics().height(),
                              Qt::AlignRight, number);
         }
 

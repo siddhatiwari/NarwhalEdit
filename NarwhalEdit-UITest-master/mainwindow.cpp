@@ -18,12 +18,6 @@
 
 MainWindow::MainWindow()
 {
-    if (!whiteTheme) {
-        QPalette p = palette();
-        p.setColor(QPalette::Base, QColor(32, 32, 32));
-        p.setColor(QPalette::Text, QColor(230, 230, 230));
-        setPalette(p);
-    }
 
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
@@ -44,11 +38,12 @@ MainWindow::MainWindow()
     setWindowTitle(tr("NarwhalEdit"));
     setMinimumSize(160, 160);
 
-    QRect screen = QApplication::desktop()->screenGeometry();
     QSettings settings;
     settings.beginGroup("MainWindow");
+    QRect screen = QApplication::desktop()->screenGeometry();
     resize(settings.value("size", screen.size()).toSize());
     settings.endGroup();
+
 }
 
 #ifndef QT_NO_CONTEXTMENU
@@ -185,9 +180,16 @@ void MainWindow::updateLineNumber(int lineNumber)
 void MainWindow::setupStatusBar()
 {
     lineNumberLabel = new QLabel("Line: 1");
+    lineNumberLabel->setAccessibleName(QString("line-number-label"));
+
     highlightingButton = new QToolButton();
+    highlightingButton->setAccessibleName(QString("highlighting-button"));
     highlightingButton->setPopupMode(QToolButton::MenuButtonPopup);
+
     syntaxMenu = new QMenu();
+    syntaxMenu->setAccessibleName(QString("highlighting-menu"));
+    highlightingButton->setMenu(syntaxMenu);
+
     statusBar()->addWidget(lineNumberLabel, 1);
     statusBar()->addWidget(highlightingButton, 1);
 }
@@ -294,7 +296,6 @@ void MainWindow::createMenus()
             updateHighlightingAction(i);
         });
     }
-    highlightingButton->setMenu(syntaxMenu);
 
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newAct);
@@ -432,22 +433,38 @@ void MainWindow::connectionInfoAction()
 
 void MainWindow::darkThemeAction()
 {
-    setTheme(false);
-    for (int i = 0; i < tabBar->count(); i++) {
-        CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
-        editor->highlightCurrentLine();
+    if (whiteTheme) {
+        setTheme(false);
+        for (int i = 0; i < tabBar->count(); i++) {
+            CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
+            editor->highlightCurrentLine();
+        }
+
+        QSettings settings;
+        settings.beginGroup("MainWindow");
+        settings.setValue("whiteTheme", false);
+        settings.endGroup();
+
+        qApp->processEvents();
     }
-    qApp->processEvents();
 }
 
 void MainWindow::defaultThemeAction()
 {
-    setTheme(true);
-    for (int i = 0; i < tabBar->count(); i++) {
-        CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
-        editor->highlightCurrentLine();
+    if (!whiteTheme) {
+        setTheme(true);
+        for (int i = 0; i < tabBar->count(); i++) {
+            CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
+            editor->highlightCurrentLine();
+        }
+
+        QSettings settings;
+        settings.beginGroup("MainWindow");
+        settings.setValue("whiteTheme", true);
+        settings.endGroup();
+
+        qApp->processEvents();
     }
-    qApp->processEvents();
 }
 
 void MainWindow::ctrlWAction()

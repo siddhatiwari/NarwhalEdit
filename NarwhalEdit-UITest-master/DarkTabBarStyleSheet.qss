@@ -14,9 +14,53 @@ QMainWindow {
     background: black;
 }
 
+QScrollBar:vertical {
+    background: rgb(48, 48, 48);
+    width: 10px;
+}
+
+QScrollBar::handle:vertical {
+    background: rgb(128, 128, 128);
+}
+
+QScrollBar:add-line, QScrollBar:sub-line {
+    height: 0px;
+}
+
+QStatusBar {
+    background: black;
+    border = 0px;
+    color: white;
+}
+
+QLabel[accessibleName="line-number-label"] {
+    color: rgb(150, 150, 150);
+    padding: 0px 3px 3px 10px;
+}
+
+QToolButton[accessibleName="highlighting-button"] {
+    background: black;
+    color: rgb(150, 150, 150);
+}
+
+QMenu[accessibleName="highlighting-menu"] {
+    background: black;
+    color: white;
+}
+
+QMenu[accessibleName="highlighting-menu"]:selected {
+    background: rgb(64, 64, 64);
+    color: white;
+}
+
+QMenu[accessibleName="highlighting-menu"]:!selected {
+    background: black;
+    color: rgb(150, 150, 150);
+}
+
 QPlainTextEdit {
     background: rgb(32, 32, 32);
-    color: rgb(230, 230, 230);
+    color: rgb(240, 240, 240);
 }
 
 TabWidget::tab-bar:left {

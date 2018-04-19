@@ -3,6 +3,19 @@ QPlainTextEdit {
     color: black;
 }
 
+QStatusBar {
+    background: rgb(240, 240, 240);
+}
+
+QLabel[accessibleName="line-number-label"] {
+    padding: 0px 3px 3px 10px;
+}
+
+QToolButton[accessibleName="highlighting-button"] {
+    background: rgb(240, 240, 240);
+    color: black;
+}
+
 QTabWidget::pane {
     background: white;
 }

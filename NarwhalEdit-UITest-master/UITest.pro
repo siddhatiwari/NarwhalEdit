@@ -30,7 +30,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        main.cpp \
         mainwindow.cpp \
     tabbar.cpp \
     codeeditor.cpp \
@@ -38,7 +37,8 @@ SOURCES += \
     server.cpp \
     language.cpp \
     c_plus_plus.cpp \
-    globals.mm
+    globals.mm \
+    main.cpp
 
 HEADERS += \
         mainwindow.h \
