@@ -105,8 +105,6 @@ void MainWindow::open()
         QFileInfo fileInfo(fileName);
         createTab(codeEditor, fileInfo.fileName());
 
-        qDebug() << "2";
-
     }
 }
 

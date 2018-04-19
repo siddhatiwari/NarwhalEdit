@@ -26,6 +26,7 @@ void TabBar::createEditorTab(CodeEditor *codeEditor, QString title)
 
 bool TabBar::handleCloseRequested(int tabIndex)
 {
+    qDebug() << programExiting;
     if (handleTabCloseRequest(tabIndex))
         this->removeTab(tabIndex);
     if (count() == 0)
@@ -34,6 +35,7 @@ bool TabBar::handleCloseRequested(int tabIndex)
 
 bool TabBar::handleTabCloseRequest(int tabIndex)
 {
+
     if (!programExiting) {
         bool serversOpen = false;
         bool connectionsOpen = false;
@@ -66,7 +68,7 @@ bool TabBar::handleTabCloseRequest(int tabIndex)
             return message->exec() == QMessageBox::Yes;
         }
 
-        return false;
+        return true;
     }
     else
         return true;
