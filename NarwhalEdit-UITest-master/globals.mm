@@ -3,12 +3,16 @@
 #include <QFile>
 #include <QDebug>
 
+#ifdef Q_OS_MAC
+
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSView.h>
 #import <AppKit/NSColor.h>
 #import <AppKit/NSAppearance.h>
+
+#endif
 
 bool whiteTheme = true;
 MainWindow *mainWindow = 0;
