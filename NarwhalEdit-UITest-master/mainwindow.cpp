@@ -344,32 +344,32 @@ void MainWindow::startServerAction()
     bool currentEditorConnected = currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState;
     if (!currentEditorConnected) {
         if (!currentEditor->editorServer->isListening()) {
-            int portInput = QInputDialog::getInt(this, tr("Connection Port"),
-                                                     tr("Port:"), QLineEdit::Normal);
+            int portInput = QInputDialog::getInt(this, QString("Connection Port"),
+                                                     addDarkThemeHTML(QString("Port:")), QLineEdit::Normal);
             if (portInput >= 1000 && portInput <= 9999) {
                 currentEditor->editorServer->startServer(portInput);
                 if (currentEditor->editorServer->isListening()) {
                     currentEditor->editorSocket->connectToHost(QHostAddress::Any, portInput);
                     if (!currentEditor->editorSocket->waitForConnected())
-                        QMessageBox::information(this, tr(""), QString("Error: Unable to connect to host"));
+                        QMessageBox::information(this, tr(""), addDarkThemeHTML(QString("Error: Unable to connect to host")));
                     else {
                         currentEditor->connectedPort = portInput;
                         qDebug() << "Connected to host";
                     }
                 }
                 else
-                    QMessageBox::information(this, "", QString("Error: Could not start server on port " + QString::number(portInput)));
+                    QMessageBox::information(this, "", addDarkThemeHTML(QString("Error: Could not start server on port " + QString::number(portInput))));
             }
             else
-                QMessageBox::information(this, tr(""), QString("Error: Invalid server port " + QString::number(portInput)));
+                QMessageBox::information(this, tr(""), addDarkThemeHTML(QString("Error: Invalid server port " + QString::number(portInput))));
         }
         else {
             int currentTabIndex = tabBar->currentIndex();
-            QMessageBox::information(this, tr(""), QString("Error: Server for '" + tabBar->tabText(currentTabIndex) + "' already running!"));
+            QMessageBox::information(this, tr(""), addDarkThemeHTML(QString("Error: Server for '" + tabBar->tabText(currentTabIndex) + "' already running!")));
         }
     }
     else if (currentEditorConnected)
-        QMessageBox::information(this, tr(""), QString("Error: Already connected to a server"));
+        QMessageBox::information(this, tr(""), addDarkThemeHTML(QString("Error: Already connected to a server")));
     updateNetworkMenuOptions();
 }
 
@@ -386,12 +386,12 @@ void MainWindow::connectAction()
 {
     bool currentEditorConnected = currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState;
     if (!currentEditorConnected) {
-        int portInput = QInputDialog::getInt(this, tr("Connection Port"),
-                                                 tr("Port:"), QLineEdit::Normal);
+        int portInput = QInputDialog::getInt(this, QString("Connection Port"),
+                                                 addDarkThemeHTML(QString("Port:")), QLineEdit::Normal);
         if (portInput >= 1000 && portInput <= 9999) {
             currentEditor->editorSocket->connectToHost(QHostAddress::Any, portInput);
             if (!currentEditor->editorSocket->waitForConnected())
-                QMessageBox::information(this, tr(""), QString("Error: Unable to connect to host"));
+                QMessageBox::information(this, tr(""), addDarkThemeHTML(QString("Error: Unable to connect to host")));
             else {
                 currentEditor->connectedPort = portInput;
                 updateNetworkMenuOptions();
@@ -399,14 +399,14 @@ void MainWindow::connectAction()
             }
         }
         else
-            QMessageBox::information(this, tr(""), QString("Error: Invalid server port " + QString::number(portInput)));
+            QMessageBox::information(this, tr(""), addDarkThemeHTML(QString("Error: Invalid server port " + QString::number(portInput))));
     }
     else if (currentEditorConnected) {
         QString currentAddress = QString::number(currentEditor->editorSocket->localPort());
-        QMessageBox::information(this, tr(""), QString("Error: Already connected to host on port " + currentAddress));
+        QMessageBox::information(this, tr(""), addDarkThemeHTML(QString("Error: Already connected to host on port " + currentAddress)));
     }
     else
-        QMessageBox::information(this, tr(""), QString("Error: Connection failed"));
+        QMessageBox::information(this, tr(""), addDarkThemeHTML(QString("Error: Connection failed")));
 }
 
 void MainWindow::disconnectAction()
@@ -425,8 +425,8 @@ void MainWindow::connectionInfoAction()
     QString port = currentEditor->connectedPort == 0 ? "N/A" : QString::number(currentEditor->connectedPort);
     QString connections = !currentEditor->editorServer->isListening() ? "N/A" : QString::number(currentEditor->editorServer->connections);
 
-    QString text = QString("Hosting file: " + hosting + "\n" + "Connected port: " + port + "\n" +
-                           "Server connections: " + connections);
+    QString text = addDarkThemeHTML(QString("Hosting file: " + hosting + "<br />" + "Connected port: " + port + "<br />" +
+                           "Server connections: " + connections));
     messageBox.setText(text);
     messageBox.exec();
 }

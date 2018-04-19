@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include "codeeditor.h"
 #include "highlighter.h"
+#include "globals.h"
 
 TabBar::TabBar()
 {
@@ -21,7 +22,6 @@ TabBar::~TabBar()
 void TabBar::createEditorTab(CodeEditor *codeEditor, QString title)
 {
     addTab(codeEditor, title);
-//    tabBar()->tabRect(currentIndex()).
 }
 
 bool TabBar::handleCloseRequested(int tabIndex)
@@ -51,16 +51,18 @@ bool TabBar::handleTabCloseRequest(int tabIndex)
         message->addButton(QMessageBox::Yes);
         message->addButton(QMessageBox::No);
         message->setDefaultButton(QMessageBox::Yes);
+        message->setWindowFlag(Qt::FramelessWindowHint);
+        QString messageText;
         if (serversOpen) {
-            message->setText("There are editor server(s) open, do you still want to close?");
+            message->setText(addDarkThemeHTML(QString("There are editor server(s) open, do you still want to close?")));
             return message->exec() == QMessageBox::Yes;
         }
         if (connectionsOpen) {
-            message->setText("There are editor connection(s) open, do you still want to close?");
+            message->setText(addDarkThemeHTML(QString("There are editor connection(s) open, do you still want to close?")));
             return message->exec() == QMessageBox::Yes;
         }
         if (unsavedDocuments) {
-            message->setText("There are unsaved document(s) open, do you still want to close?");
+            message->setText(addDarkThemeHTML(QString("There are unsaved document(s) open, do you still want to close?")));
             return message->exec() == QMessageBox::Yes;
         }
 

@@ -27,6 +27,16 @@ QScrollBar:add-line, QScrollBar:sub-line {
     height: 0px;
 }
 
+QMessageBox {
+    background: rgb(32, 32, 32);
+    color: rgb(240, 240, 240);
+}
+
+QInputDialog {
+    background: rgb(32, 32, 32);
+    color: rgb(240, 240, 240);
+}
+
 QStatusBar {
     background: black;
     border = 0px;

@@ -53,3 +53,12 @@ void setTheme(bool wTheme)
     }
 
 }
+
+QString addDarkThemeHTML(QString text)
+{
+    if (!whiteTheme) {
+        text.insert(0, "<FONT COLOR='#F0F0F0'>");
+        text.append("</FONT>");
+    }
+    return text;
+}
