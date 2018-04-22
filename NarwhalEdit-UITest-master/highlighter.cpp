@@ -1,5 +1,7 @@
 
 #include "highlighter.h"
+#include <QDebug>
+#include <vector>
 
 Highlighter::Highlighter(QTextDocument *parent, Language *language)
     : QSyntaxHighlighter(parent)
@@ -24,7 +26,6 @@ Highlighter::Highlighter(QTextDocument *parent, Language *language)
     quotationFormat.setForeground(QColor(0, 204, 102));
     rule.pattern = QRegularExpression("\".*\"");
     rule.format = quotationFormat;
-    highlightingRules.append(rule);
 
     functionFormat.setFontItalic(true);
     functionFormat.setForeground(QColor(51, 153, 255));
@@ -35,7 +36,6 @@ Highlighter::Highlighter(QTextDocument *parent, Language *language)
     singleLineCommentFormat.setForeground(Qt::red);
     rule.pattern = language->getSingleLineRegularExpression();
     rule.format = singleLineCommentFormat;
-    highlightingRules.append(rule);
 
     multiLineCommentFormat.setForeground(Qt::red);
 
@@ -45,13 +45,7 @@ Highlighter::Highlighter(QTextDocument *parent, Language *language)
 
 void Highlighter::highlightBlock(const QString &text)
 {
-    foreach (const HighlightingRule &rule, highlightingRules) {
-        QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
-        while (matchIterator.hasNext()) {
-            QRegularExpressionMatch match = matchIterator.next();
-            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
-        }
-    }
+
     setCurrentBlockState(0);
 
     int startIndex = 0;
@@ -72,4 +66,55 @@ void Highlighter::highlightBlock(const QString &text)
         setFormat(startIndex, commentLength, multiLineCommentFormat);
         startIndex = text.indexOf(commentStartExpression, startIndex + commentLength);
     }
+
+    std::vector<char> quotesStack;
+    QChar previousChar;
+    QChar currentChar;
+    QChar nextChar;
+    int start;
+    int end;
+    int singleLineStartIndex = -1;
+    for (int i = 0; i < text.size(); i++) {
+        previousChar = -1;
+        currentChar = text.at(i);
+        nextChar = -1;
+
+        if (text.size() - 1 >= i + 1)
+            nextChar = text.at(i + 1);
+        else
+            nextChar = -1;
+
+        if (i != 0)
+            previousChar = text.at(i - 1);
+        else
+            previousChar = -1;
+
+        bool isFalseQuote = previousChar == '\\' && currentChar == '"' && quotesStack.size() == 1;
+
+        if (quotesStack.size() == 0 && currentChar == '/'  && nextChar == '/')
+            singleLineStartIndex = i;
+
+        if (quotesStack.size() == 0 && !isFalseQuote && currentChar == '"'){
+            quotesStack.push_back('"');
+            start = i;
+        }
+        else if (quotesStack.size() == 1 && !isFalseQuote && currentChar == '"' && i != start && singleLineStartIndex == -1){
+            quotesStack.pop_back();
+            end = i;
+            setFormat(start, end - start + 1, quotationFormat);
+        }
+
+    }
+
+    foreach (const HighlightingRule &rule, highlightingRules) {
+        QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
+        while (matchIterator.hasNext()) {
+            QRegularExpressionMatch match = matchIterator.next();
+            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
+        }
+    }
+
+    if (singleLineStartIndex != -1)
+        setFormat(singleLineStartIndex, text.size(), singleLineCommentFormat);
+
 }

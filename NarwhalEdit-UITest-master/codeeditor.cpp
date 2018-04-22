@@ -377,7 +377,7 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
 
 void CodeEditor::calculateNewLineNumber()
 {
-    qDebug() << (cursorRect().y() - 4) << endl << cursorRect().size().height();
+    //qDebug() << (cursorRect().y() - 4) << endl << cursorRect().size().height();
     currentLine = firstVisibleBlock().blockNumber();
     emit updateLineNumber(currentLine);
 }
