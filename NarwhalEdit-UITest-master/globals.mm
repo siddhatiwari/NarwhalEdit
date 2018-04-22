@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QFile>
 #include <QDebug>
+#include <QFont>
 
 #ifdef Q_OS_MAC
 
@@ -16,6 +17,15 @@
 
 bool whiteTheme = true;
 MainWindow *mainWindow = 0;
+QFont globalFont;
+
+void createFont()
+{
+    globalFont.setFamily("Monaco");
+    globalFont.setStyleHint(QFont::Monospace);
+    globalFont.setFixedPitch(true);
+    globalFont.setPointSize(13);
+}
 
 void setTheme(bool wTheme)
 {

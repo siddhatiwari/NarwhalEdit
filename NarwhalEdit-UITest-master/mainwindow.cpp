@@ -179,6 +179,18 @@ void MainWindow::saveAs()
     }
 }
 
+void MainWindow::find()
+{
+    if (currentEditor->findWidget->isVisible())
+        currentEditor->findWidget->hide();
+    else {
+        currentEditor->findWidget->show();
+        currentEditor->clearFocus();
+        currentEditor->findWidget->getLineEdit()->setFocus();
+    }
+
+}
+
 void MainWindow::undo()
 {
     currentEditor->undo();
@@ -259,6 +271,11 @@ void MainWindow::createActions()
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
     saveAsAct->setStatusTip(tr("Save the document to disk with a file name"));
     connect(saveAsAct, &QAction::triggered, this, &MainWindow::saveAs);
+
+    findAct = new QAction(tr("&Find"), this);
+    findAct->setShortcuts(QKeySequence::Find);
+    findAct->setStatusTip(tr("Find a string in the text"));
+    connect(findAct, &QAction::triggered, this, &MainWindow::find);
 
     undoAct = new QAction(tr("&Undo"), this);
     undoAct->setShortcuts(QKeySequence::Undo);
@@ -357,6 +374,8 @@ void MainWindow::createMenus()
     editMenu = menuBar()->addMenu(tr("&Edit"));
     editMenu->addAction(undoAct);
     editMenu->addAction(redoAct);
+    editMenu->addSeparator();
+    editMenu->addAction(findAct);
     editMenu->addSeparator();
     editMenu->addAction(cutAct);
     editMenu->addAction(copyAct);

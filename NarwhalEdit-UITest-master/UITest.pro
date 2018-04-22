@@ -38,7 +38,8 @@ SOURCES += \
     language.cpp \
     c_plus_plus.cpp \
     globals.mm \
-    main.cpp
+    main.cpp \
+    findwidget.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -48,7 +49,8 @@ HEADERS += \
     server.h \
     language.h \
     c_plus_plus.h \
-    globals.h
+    globals.h \
+    findwidget.h
 
 FORMS += \
         mainwindow.ui

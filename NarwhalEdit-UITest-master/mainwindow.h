@@ -31,6 +31,7 @@ private slots:
     void open();
     void save();
     void saveAs();
+    void find();
     void undo();
     void redo();
     void cut();
@@ -61,6 +62,7 @@ private:
 
     TabBar *tabBar;
     CodeEditor *currentEditor;
+    QWidget *findWidget;
     QLabel *lineNumberLabel;
     QToolButton *highlightingButton;
     QMenu *syntaxMenu;
@@ -75,6 +77,7 @@ private:
     QAction *openAct;
     QAction *saveAct;
     QAction *saveAsAct;
+    QAction *findAct;
     QAction *exitAct;
     QAction *undoAct;
     QAction *redoAct;

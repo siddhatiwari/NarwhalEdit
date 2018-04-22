@@ -7,6 +7,7 @@
 #include <QTcpSocket>
 #include "highlighter.h"
 #include "server.h"
+#include "findwidget.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -26,6 +27,7 @@ public:
     QCompleter *completer() const;
     Server *editorServer;
     QTcpSocket *editorSocket;
+    FindWidget *findWidget;
     int connectedPort = 0;
     QString filePath = "";
     bool getDocumentSaved();
@@ -47,6 +49,7 @@ private:
     QCompleter *cmpltr;
     bool documentSaved = false;
     int currentLine = 1;
+    QString findingText = "";
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -110,8 +113,9 @@ private slots:
 
     void calculateNewLineNumber();
 
-};
+    void find(QString text);
 
+};
 
 class LineNumberArea : public QWidget
 {

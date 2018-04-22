@@ -18,14 +18,18 @@ CodeEditor::~CodeEditor()
 
 void CodeEditor::setupEditor()
 {
+    QHBoxLayout *hLayout = new QHBoxLayout();
+    findWidget = new FindWidget(this);
+    findWidget->setAccessibleName("find-widget");
+    findWidget->hide();
+    connect(findWidget, SIGNAL(findButtonClicked(QString)), this, SLOT(find(QString)));
+    hLayout->addWidget(findWidget);
 
-    // Sets tab
-    QFont font;
-    font.setFamily("Monaco");
-    font.setStyleHint(QFont::Monospace);
-    font.setFixedPitch(true);
-    font.setPointSize(13);
-    setFont(font);
+    QVBoxLayout *vLayout = new QVBoxLayout(this);
+    vLayout->addLayout(hLayout);
+    vLayout->addStretch(1);
+
+    setFont(globalFont);
 
     // Sets tab size to 4 spaces
     const int tabSize = 4;
@@ -140,7 +144,7 @@ void CodeEditor::highlightCurrentLine()
         else
             lineColor = QColor(48, 48, 48);
 
-        selection.format.setBackground(lineColor);
+        //selection.format.setBackground(lineColor);
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
         selection.cursor = textCursor();
         selection.cursor.clearSelection();
@@ -173,6 +177,8 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             else
                 painter.setPen(Qt::darkGray);
             painter.setFont(font());
+            //QRect selectedLineRect(0, adjustedRect.y(), lineNumberArea->width(), 17);
+            //painter.fillRect(selectedLineRect, QColor(255, 0, 0));
             painter.drawText(0, top, lineNumberArea->width() - 5, fontMetrics().height(),
                              Qt::AlignRight, number);
         }
@@ -199,6 +205,7 @@ void CodeEditor::completeText()
 
     tryIgnore();
     tryAutocompete();
+    find(findingText);
     writeData();
 
     blockSignals(false);
@@ -256,7 +263,7 @@ bool CodeEditor::writeData()
 void CodeEditor::sendData(QByteArray data, QTcpSocket *sender)
 {
     if (editorServer->isListening()) {
-        for (int i = 0; i < editorServer->sockets.size(); i++) {
+        for (int i = 0; i < int(editorServer->sockets.size()); i++) {
             QTcpSocket *socket = editorServer->sockets.at(i);
             if (socket != sender)
                 socket->write(data);
@@ -303,6 +310,13 @@ void CodeEditor::findCompletionKeywords()
     }
 
     cmpltr->setModel(new QStringListModel(wordList, cmpltr));
+}
+
+void CodeEditor::find(QString text)
+{
+    findingText = text;
+    highlighter->textToFind = text;
+    highlighter->rehighlight();
 }
 
 void CodeEditor::insertCompletion(const QString &completion)

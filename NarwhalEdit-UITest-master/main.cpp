@@ -12,6 +12,8 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationName("Siddha Tiwari");
     QApplication::setApplicationName("NarwhalEdit");
 
+    createFont();
+
     QSettings settings;
     settings.beginGroup("MainWindow");
     whiteTheme = settings.value("whiteTheme", true).toBool();

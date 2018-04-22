@@ -48,24 +48,14 @@ void Highlighter::highlightBlock(const QString &text)
 
     setCurrentBlockState(0);
 
+    QTextCharFormat defaultFormat;
+    defaultFormat.setBackground(Qt::transparent);
+    defaultFormat.setForeground(QColor(210, 210, 210));
+    setFormat(0, text.size(), defaultFormat);
+
     int startIndex = 0;
     if (previousBlockState() != 1)
         startIndex = text.indexOf(commentStartExpression);
-
-    while (startIndex >= 0) {
-        QRegularExpressionMatch match = commentEndExpression.match(text, startIndex);
-        int endIndex = match.capturedStart();
-        int commentLength = 0;
-        if (endIndex == -1) {
-            setCurrentBlockState(1);
-            commentLength = text.length() - startIndex;
-        } else {
-            commentLength = endIndex - startIndex
-                            + match.capturedLength();
-        }
-        setFormat(startIndex, commentLength, multiLineCommentFormat);
-        startIndex = text.indexOf(commentStartExpression, startIndex + commentLength);
-    }
 
     std::vector<char> quotesStack;
     QChar previousChar;
@@ -112,9 +102,38 @@ void Highlighter::highlightBlock(const QString &text)
             QRegularExpressionMatch match = matchIterator.next();
             setFormat(match.capturedStart(), match.capturedLength(), rule.format);
         }
+
     }
 
     if (singleLineStartIndex != -1)
         setFormat(singleLineStartIndex, text.size(), singleLineCommentFormat);
+
+    while (startIndex >= 0) {
+        QRegularExpressionMatch match = commentEndExpression.match(text, startIndex);
+        int endIndex = match.capturedStart();
+        int commentLength = 0;
+        if (endIndex == -1) {
+            setCurrentBlockState(1);
+            commentLength = text.length() - startIndex;
+        } else {
+            commentLength = endIndex - startIndex
+                            + match.capturedLength();
+        }
+        setFormat(startIndex, commentLength, multiLineCommentFormat);
+        startIndex = text.indexOf(commentStartExpression, startIndex + commentLength);
+    }
+
+    qDebug() << textToFind;
+    if (textToFind != "") {
+        QTextCharFormat colorFormat;
+        colorFormat.setBackground(Qt::yellow);
+
+        for (int i = 0; i < text.size() - textToFind.size() + 1; i++) {
+            QString test = text.mid(i, textToFind.size());
+            if (test == textToFind) {
+                setFormat(i, textToFind.size(), colorFormat);
+            }
+        }
+    }
 
 }
