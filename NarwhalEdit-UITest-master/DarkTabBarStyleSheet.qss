@@ -19,7 +19,16 @@ QScrollBar:vertical {
     width: 10px;
 }
 
+QScrollBar:horizontal {
+    background: rgb(48, 48, 48);
+    height = 5px;
+}
+
 QScrollBar::handle:vertical {
+    background: rgb(128, 128, 128);
+}
+
+QScrollBar::handle:horizontal {
     background: rgb(128, 128, 128);
 }
 

@@ -18,6 +18,8 @@ CodeEditor::~CodeEditor()
 
 void CodeEditor::setupEditor()
 {
+    setLineWrapMode(QPlainTextEdit::NoWrap);
+
     QHBoxLayout *hLayout = new QHBoxLayout();
     findWidget = new FindWidget(this);
     findWidget->setAccessibleName("find-widget");
@@ -66,11 +68,12 @@ void CodeEditor::setupEditor()
     connect(this, &CodeEditor::cursorPositionChanged, [this]() {
         highlightCurrentLine();
     });
-    connect(this, SIGNAL(textChanged()), this, SLOT(rehighlight()));
-    connect(this, SIGNAL(textChanged()), this, SLOT(completeText()));
-    connect(this, SIGNAL(textChanged()), this, SLOT(findCompletionKeywords()));
     connect(this, &CodeEditor::textChanged, [this]() {
-       documentSaved = false;
+        rehighlight();
+        completeText();
+        findCompletionKeywords();
+        calculateNewLineNumber();
+        documentSaved = false;
     });
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(calculateNewLineNumber()));
 
@@ -90,6 +93,7 @@ void CodeEditor::setDocumentSaved(bool saved)
 
 int CodeEditor::getCurrentLine()
 {
+    calculateNewLineNumber();
     return currentLine;
 }
 
@@ -391,7 +395,6 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
 
 void CodeEditor::calculateNewLineNumber()
 {
-    //qDebug() << (cursorRect().y() - 4) << endl << cursorRect().size().height();
-    currentLine = firstVisibleBlock().blockNumber();
+    int currentLine = firstVisibleBlock().blockNumber() +  cursorRect().y() / cursorRect().size().height() + 1;
     emit updateLineNumber(currentLine);
 }

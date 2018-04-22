@@ -194,26 +194,32 @@ void MainWindow::find()
 void MainWindow::undo()
 {
     currentEditor->undo();
+    lineNumberLabel->setText("Line: " + QString::number(currentEditor->getCurrentLine()));
 }
 
 void MainWindow::redo()
 {
     currentEditor->redo();
+    lineNumberLabel->setText("Line: " + QString::number(currentEditor->getCurrentLine()));
 }
 
 void MainWindow::cut()
 {
     currentEditor->cut();
+    lineNumberLabel->setText("Line: " + QString::number(currentEditor->getCurrentLine()));
 }
 
 void MainWindow::copy()
 {
     currentEditor->copy();
+    lineNumberLabel->setText("Line: " + QString::number(currentEditor->getCurrentLine()));
 }
 
 void MainWindow::paste()
 {
     currentEditor->paste();
+    qDebug() << "asfd";
+    lineNumberLabel->setText("Line: " + QString::number(currentEditor->getCurrentLine()));
 }
 
 void MainWindow::about()
