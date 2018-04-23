@@ -17,7 +17,7 @@ Java::Java()
                             <<"\\bsuper\\b"<<"\\bswitch\\b"<<"\\bsynchronized\\b"
                             <<"\\bthis\\b"<<"\\bthrow\\b"<<"\\bthrows\\b"
                             <<"\\btransient\\b"<<"\\btry\\b"<<"\\bvoid\\b"
-                            <<"\\bvolatile\\b"<<"\\bwhile\\b";
+                            <<"\\bvolatile\\b"<<"\\bwhile\\b"<<"\\btrue\\b"<<"\\bfalse\\b";
     this->commentStartExpression = QRegularExpression("/\\*");
     this->commentEndExpression = QRegularExpression("\\*/");
     this->singleLineComment= "//";

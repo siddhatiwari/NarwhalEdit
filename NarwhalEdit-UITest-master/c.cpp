@@ -21,6 +21,7 @@ C::C()
                            << "\\binline\\b"
                            << "\\bint\\b"
                            << "\\blong\\b"
+                           << "\\bbool\\b"
                            << "\\bregister\\b"
                            << "\\brestrict\\b"
                            << "\\breturn\\b"
@@ -44,6 +45,8 @@ C::C()
                            << "\\b_Generic\\b"
                            << "\\b_Imaginary\\b"
                            << "\\b_Noreturn\\b"
+                           << "\\btrue\\b"
+                           << "\\bfalse\\b"
                            << "\\b_Static_assert\\b"
                            << "\\b_Thread_local\\b";
     this->commentStartExpression = QRegularExpression("/\\*");

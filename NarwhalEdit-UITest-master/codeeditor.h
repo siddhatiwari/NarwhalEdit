@@ -139,6 +139,4 @@ protected:
 private:
     CodeEditor *codeEditor;
 };
-
-
 #endif
