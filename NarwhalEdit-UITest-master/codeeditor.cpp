@@ -29,6 +29,7 @@ void CodeEditor::setupEditor()
 {
     setLineWrapMode(QPlainTextEdit::NoWrap);
 
+    // Sets up layout for find widget
     QHBoxLayout *hLayout = new QHBoxLayout();
     findWidget = new FindWidget(this);
     findWidget->setAccessibleName("find-widget");
@@ -40,6 +41,7 @@ void CodeEditor::setupEditor()
     vLayout->addLayout(hLayout);
     vLayout->addStretch(1);
 
+    // Sets font to the global font
     setFont(globalFont);
 
     // Sets tab size to 4 spaces
@@ -62,9 +64,11 @@ void CodeEditor::setupEditor()
     cmpltr->setWrapAround(false);
     connect(cmpltr, SIGNAL(activated(QString)), this, SLOT(insertCompletion(QString)));
 
+    // Creates a server for the editor
     editorServer = new Server();
     connect(editorServer, &Server::dataReceived, this, &CodeEditor::sendData);
 
+    // Creates a client socket for the editor
     editorSocket = new QTcpSocket();
     connect(editorSocket, SIGNAL(readyRead()), this, SLOT(updateText()));
     connect(editorSocket, &QTcpSocket::disconnected, [this]() {
@@ -72,12 +76,19 @@ void CodeEditor::setupEditor()
                                                   + QString::number(connectedPort))) ;
     });
 
+    // Creates a connection for the block coun changing to updating the line number width
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
+
+    // Creates a connection for the an update requested for the text, and updates the line number accordingly
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
+
+    // Handles the cursor position changing
     connect(this, &CodeEditor::cursorPositionChanged, [this]() {
         highlightCurrentLine();
         calculateNewLineNumber();
     });
+
+    // Handles the text content changing
     connect(this, &CodeEditor::textChanged, [this]() {
         rehighlight();
         completeText();
@@ -156,6 +167,7 @@ void CodeEditor::highlightCurrentLine()
 {
     QList<QTextEdit::ExtraSelection> extraSelections;
 
+    // Highlights line if it is editable
     if (!isReadOnly()) {
         QTextEdit::ExtraSelection selection;
 
@@ -180,16 +192,19 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     QRect adjustedRect = event->rect();
     adjustedRect.setWidth(event->rect().width());
     QPainter painter(lineNumberArea);
+
     if (!whiteTheme)
         painter.fillRect(adjustedRect, QColor(16, 16, 16));
     else
         painter.fillRect(adjustedRect, QColor(240, 240, 240));
 
+    // Finds dimensions to highlight
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
     int bottom = top + (int) blockBoundingRect(block).height();
 
+    // If the block can be highlighted, do highlighting
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
@@ -278,6 +293,7 @@ void CodeEditor::tryIgnore()
 
 bool CodeEditor::writeData()
 {
+    // If socket is connected, write the current text as data to the socket
     if (editorSocket->state() == QAbstractSocket::ConnectedState) {
         qDebug() << "writing data";
         QString currentText = toPlainText();
@@ -291,6 +307,7 @@ bool CodeEditor::writeData()
 
 void CodeEditor::sendData(QByteArray data, QTcpSocket *sender)
 {
+    // If editor server is listenting, emit the data to its children sockets
     if (editorServer->isListening()) {
         for (int i = 0; i < int(editorServer->sockets.size()); i++) {
             QTcpSocket *socket = editorServer->sockets.at(i);
@@ -312,6 +329,7 @@ void CodeEditor::updateText()
 
 void CodeEditor::findCompletionKeywords()
 {
+    // Finds keywords that need to be completed
     std::vector<char> excludeChars = {' ', '.', '(', ')', '{', '}',
                                  '[', ']', '<', '>', '\n', '\t', '-'};
     QString currentText = toPlainText();
@@ -383,6 +401,7 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
         tryAutocompete();
     }
 
+    // If the popup is visible handle the keypress accordingly
     if (cmpltr && cmpltr->popup()->isVisible()) {
        switch (e->key()) {
        case Qt::Key_Enter:
@@ -397,6 +416,7 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
        }
     }
 
+    // Check if a shortcut is pressed and execute it
     bool isShortcut = ((e->modifiers() & Qt::ControlModifier) && e->key() == Qt::Key_D);
     if (!cmpltr || !isShortcut)
         QPlainTextEdit::keyPressEvent(e);
@@ -415,6 +435,7 @@ void CodeEditor::keyPressEvent(QKeyEvent *e)
         return;
     }
 
+    // Check if a prefix is entered
     if (completionPrefix != cmpltr->completionPrefix()) {
         cmpltr->setCompletionPrefix(completionPrefix);
         cmpltr->popup()->setCurrentIndex(cmpltr->completionModel()->index(0, 0));

@@ -13,9 +13,33 @@ protected:
     QRegularExpression commentEndExpression;
     std::string singleLineComment;
 public:
+
+    /**
+     * @brief Gets the keyword patters
+     * @return QStringList
+     */
+
     QStringList getKeywordPatterns();
+
+    /**
+     * @brief Gets the comment start expression
+     * @return QRegularExpression
+     */
+
     QRegularExpression getCommentStartExpression();
+
+    /**
+     * @brief Gets the comment end expression
+     * @return QRegularExpression
+     */
+
     QRegularExpression getCommentEndExpression();
+
+    /**
+     * @brief Gets the single line comment
+     * @return std::string
+     */
+
     std::string getSingleLineComment();
 };
 

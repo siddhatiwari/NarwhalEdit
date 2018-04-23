@@ -28,18 +28,22 @@
 MainWindow::MainWindow()
 {
 
+    // Set a central widget
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
 
+    // Sets a layout for the main window
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setMargin(0);
     widget->setLayout(layout);
 
+    // Do initial setup
     setupStatusBar();
     createActions();
     createMenus();
     createTabBar();
 
+    // Add the tabbar with an initial tab
     layout->addWidget(tabBar);
     CodeEditor *codeEditor = new CodeEditor();
     createTab(codeEditor);
@@ -47,6 +51,7 @@ MainWindow::MainWindow()
     setWindowTitle(tr("NarwhalEdit"));
     setMinimumSize(160, 160);
 
+    // Set window size settings based on previous settings if they exist
     QSettings settings;
     settings.beginGroup("MainWindow");
     QRect screen = QApplication::desktop()->screenGeometry();
@@ -56,6 +61,7 @@ MainWindow::MainWindow()
     setWindowTitle("NarwhalEdit - " + tabBar->tabText(tabBar->currentIndex()));
 }
 
+// Perform actions if there is no action menu
 #ifndef QT_NO_CONTEXTMENU
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
@@ -74,6 +80,7 @@ void MainWindow::createTab(CodeEditor *codeEditor, QString title)
     QString languageName = highlightingButton->text();
     qDebug() << languageName;
 
+    // Create a editor tab with a the current language as the syntax highlighting
     if (languageName == "C++")
         codeEditor->getHighlighter()->setLanguage(new C_Plus_Plus());
     else if (languageName == "C")
@@ -93,6 +100,7 @@ void MainWindow::createTab(CodeEditor *codeEditor, QString title)
     else if (languageName == "Objective-C")
         codeEditor->getHighlighter()->setLanguage(new ObjectiveC());
 
+    // Connect the updating line number for the new CodeEditor to updating line number for the main window
     connect(codeEditor, SIGNAL(updateLineNumber(int)), this, SLOT(updateLineNumber(int)));
     int lastTabIndex = tabBar->count() - 1;
     tabBar->setCurrentIndex(lastTabIndex);
@@ -112,6 +120,7 @@ void MainWindow::open()
         return;
     else {
 
+        // Changes the current tab index to the new tab
         for (int i = 0; i < tabBar->count(); i++) {
             CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
             if (editor->filePath == fileName) {
@@ -169,6 +178,7 @@ void MainWindow::save()
             file.flush();
             file.close();
 
+            // Save the file project
             QString fileName = currentEditor->filePath;
             QFileInfo fileInfo(fileName);
             int currentIndex = tabBar->currentIndex();
@@ -270,6 +280,7 @@ void MainWindow::setupStatusBar()
     lineNumberLabel = new QLabel("Line: 1");
     lineNumberLabel->setAccessibleName(QString("line-number-label"));
 
+    // Sets up the highlighting button in the bottom right corner
     highlightingButton = new QToolButton();
     highlightingButton->setAccessibleName(QString("highlighting-button"));
     highlightingButton->setPopupMode(QToolButton::MenuButtonPopup);
@@ -282,6 +293,7 @@ void MainWindow::setupStatusBar()
     statusBar()->addWidget(highlightingButton, 1);
 }
 
+// Creates actions for menu items
 void MainWindow::createActions()
 {
     QStringList options = {"C++", "C", "C#",
@@ -384,9 +396,10 @@ void MainWindow::createActions()
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this, SLOT(ctrlWAction()));
 }
 
+
 void MainWindow::createMenus()
 {
-
+    // Created highlighting acts for each of the syntax
     for (int i = 0; i < syntaxHighlightingActs.size(); i++) {
         QAction *currentAction = syntaxHighlightingActs.at(i);
         if (i == 0)
@@ -396,6 +409,8 @@ void MainWindow::createMenus()
             updateHighlightingAction(i);
         });
     }
+
+    // Adds options to menus
 
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newAct);
@@ -435,6 +450,8 @@ void MainWindow::createMenus()
 void MainWindow::createTabBar()
 {
     tabBar = new TabBar();
+
+    // Handle current tab changing
     connect(tabBar, &TabBar::currentChanged, [this]() {
         currentEditor = qobject_cast<CodeEditor *>(tabBar->currentWidget());
         lineNumberLabel->setText("Line: " + QString::number(currentEditor->getCurrentLine()));
@@ -450,6 +467,8 @@ void MainWindow::startServerAction()
         if (!currentEditor->editorServer->isListening()) {
             int portInput = QInputDialog::getInt(this, QString("Connection Port"),
                                                      addDarkThemeHTML(QString("Port:")), QLineEdit::Normal);
+
+            // Check if it is a valid port
             if (portInput >= 1000 && portInput <= 9999) {
                 currentEditor->editorServer->startServer(portInput);
                 if (currentEditor->editorServer->isListening()) {
@@ -492,6 +511,8 @@ void MainWindow::connectAction()
     if (!currentEditorConnected) {
         int portInput = QInputDialog::getInt(this, QString("Connection Port"),
                                                  addDarkThemeHTML(QString("Port:")), QLineEdit::Normal);
+
+        // Check if the port is valid
         if (portInput >= 1000 && portInput <= 9999) {
             currentEditor->editorSocket->connectToHost(QHostAddress::Any, portInput);
             if (!currentEditor->editorSocket->waitForConnected())
@@ -524,6 +545,7 @@ void MainWindow::disconnectAction()
 
 void MainWindow::connectionInfoAction()
 {
+    // Find the variables for the connection information
     QMessageBox messageBox;
     QString hosting = currentEditor->editorServer->isListening() ? "true" : "false";
     QString port = currentEditor->connectedPort == 0 ? "N/A" : QString::number(currentEditor->connectedPort);
@@ -538,6 +560,7 @@ void MainWindow::connectionInfoAction()
 void MainWindow::darkThemeAction()
 {
     if (whiteTheme) {
+        // Rehighlight the current line according to theme
         setTheme(false);
         for (int i = 0; i < tabBar->count(); i++) {
             CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
@@ -545,6 +568,7 @@ void MainWindow::darkThemeAction()
         }
         currentEditor->getHighlighter()->rehighlight();
 
+        // Save the theme in the settings
         QSettings settings;
         settings.beginGroup("MainWindow");
         settings.setValue("whiteTheme", false);
@@ -577,6 +601,7 @@ void MainWindow::ctrlWAction()
 {
     if (tabBar->handleTabCloseRequest(tabBar->currentIndex()))
         tabBar->close();
+    // Quit the application if there are no open tabs
     if (tabBar->count() == 0)
         QApplication::quit();
 }

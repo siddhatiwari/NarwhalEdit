@@ -27,6 +27,9 @@ protected:
 #endif // QT_NO_CONTEXTMENU
 
 private slots:
+
+    // The following handle their respective actions
+
     void newFile();
     void open();
     void save();
@@ -39,6 +42,9 @@ private slots:
     void paste();
     void about();
     void updateLineNumber(int lineNumber);
+
+    // The following are actions that are taken to handle their events
+
     void startServerAction();
     void closeServerAction();
     void connectAction();
@@ -50,14 +56,51 @@ private slots:
     void updateHighlightingAction(int index);
 
 private:
+
+    /**
+     * @brief Sets up the status bar
+     * @return none
+     */
+
     void setupStatusBar();
+
+    // Creates Actions
     void createActions();
+
+    // Creates Menus
     void createMenus();
+
+    // Creates tab bar
     void createTabBar();
+
+    // Creates a text editor
     void createTextEditor();
+
+    // Creates a sidebar
     void createSideBar();
+
+    /**
+     * @brief Creates a tab based on an inputed CodeEditor
+     * @param CodeEditor
+     * @param QString
+     * @return none
+     */
+
     void createTab(CodeEditor *codeEditor, QString title = "New Tab");
+
+    /**
+     * @brief Handles the close event
+     * @param QCloseEvent
+     * @return none
+     */
+
     void closeEvent(QCloseEvent *bar) override;
+
+    /**
+     * @brief Updates the network menu options
+     * @return none
+     */
+
     void updateNetworkMenuOptions();
 
     TabBar *tabBar;

@@ -12,8 +12,10 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationName("Siddha Tiwari");
     QApplication::setApplicationName("NarwhalEdit");
 
+    // Creates the global font
     createFont();
 
+    // Gets settings from current settings if they exist
     QSettings settings;
     settings.beginGroup("MainWindow");
     whiteTheme = settings.value("whiteTheme", true).toBool();
@@ -21,6 +23,7 @@ int main(int argc, char *argv[])
     w->setWindowIcon(QIcon(":/Files/NarwhalEditLogo.png"));
     mainWindow = w;
 
+    // Set the theme from current settings if they exist
     setTheme(settings.value("whiteTheme", true).toBool());
     settings.endGroup();
 

@@ -2,6 +2,7 @@
 #include "highlighter.h"
 #include <QDebug>
 #include <vector>
+#include <string>
 #include "globals.h"
 
 Highlighter::Highlighter(QTextDocument *parent, Language *language)
@@ -17,6 +18,7 @@ void Highlighter::highlightBlock(const QString &text)
     std::string singleLineCommentQString=language->getSingleLineComment();
     int lengthOfComment=singleLineCommentQString.size();
 
+    // Sets the default text format based on theme to have a clean re-highlight
     QTextCharFormat defaultFormat;
     defaultFormat.setBackground(Qt::transparent);
     if (!whiteTheme)
@@ -26,9 +28,10 @@ void Highlighter::highlightBlock(const QString &text)
     setFormat(0, text.size(), defaultFormat);
 
     int startIndex = 0;
+
+    // Match each highlighting keywords
     if (previousBlockState() != 1)
         startIndex = text.indexOf(commentStartExpression);
-
     foreach (const HighlightingRule &rule, highlightingRules) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
@@ -38,101 +41,33 @@ void Highlighter::highlightBlock(const QString &text)
 
     }
 
-    std::vector<char> quotesStack;
-    QChar previousChar;
-    QChar currentChar;
-    QChar nextChar;
-    int start;
-    int end;
-    int singleLineStartIndexOne = -1;
-    for (int i = 0; i < text.size(); i++) {
-        previousChar = -1;
-        currentChar = text.at(i);
-        nextChar = -1;
-
-        if (text.size() - 1 >= i + 1)
-            nextChar = text.at(i + 1);
-        else
-            nextChar = -1;
-
-        if (i != 0)
-            previousChar = text.at(i - 1);
-        else
-            previousChar = -1;
-
-        bool isFalseQuote = previousChar == '\\' && currentChar == '"' && quotesStack.size() == 1;
-
-        if(lengthOfComment > 1 && previousChar!='*' && quotesStack.size() == 0 && currentChar == singleLineCommentQString.at(0)  && nextChar == singleLineCommentQString.at(1)){
-            singleLineStartIndexOne = i;
+    // Highlight the strings and comments that may be in the strings accordingly
+    bool stringMode = false;
+    QChar startCharacter;
+    int startQuote = -1;
+    int startComment = -1;
+    for (int index = 0; index < text.size(); index++){
+        QChar character = text.at(index);
+        if ((character == '"' || character == '\'') && !stringMode){
+            stringMode = true;
+            startCharacter = character;
+            startQuote = index;
+        } else if (stringMode && character == startCharacter && text.at(index - 1) != '\\'){
+            stringMode = false;
+            setFormat(startQuote, index - startQuote + 1, quotationFormat);
+        } else if (lengthOfComment>1&&text.at(index) == singleLineCommentQString.at(0) && index + 1 < text.size() && text.at(index + 1) == singleLineCommentQString.at(1) && !stringMode && (index - 1 >= 0 ? text.at(index - 1) != '*' : true)){
+            startComment = index;
+            break;
+        }else if (lengthOfComment==1&&text.at(index) == singleLineCommentQString.at(0) && !stringMode){
+            startComment = index;
             break;
         }
-
-        if(lengthOfComment == 1 && previousChar!='*' && quotesStack.size() == 0 && currentChar == singleLineCommentQString[0]){
-            singleLineStartIndexOne = i;
-            break;
-        }
-
-        if (quotesStack.size() == 0 && !isFalseQuote && currentChar == '"'){
-            quotesStack.push_back('"');
-            start = i;
-        }
-        else if (quotesStack.size() == 1 && !isFalseQuote && currentChar == '"' && i != start && singleLineStartIndexOne == -1){
-            quotesStack.pop_back();
-            end = i;
-            setFormat(start, end - start + 1, quotationFormat);
-        }
-
-
+    }
+    if (startComment != -1){
+        setFormat(startComment, text.size(), singleLineCommentFormat);
     }
 
-    if (singleLineStartIndexOne != -1)
-        setFormat(singleLineStartIndexOne, text.size(), singleLineCommentFormat);
-
-    std::vector<char> singleQuotesStack;
-    int singleLineStartIndex = -1;
-    start = -1;
-    end = -1;
-    for (int i = 0; i < text.size(); i++) {
-        previousChar = -1;
-        currentChar = text.at(i);
-        nextChar = -1;
-
-        if (text.size() - 1 >= i + 1)
-            nextChar = text.at(i + 1);
-        else
-            nextChar = -1;
-
-        if (i != 0)
-            previousChar = text.at(i - 1);
-        else
-            previousChar = -1;
-
-        bool isFalseQuote = previousChar == '\\' && currentChar == '\'' && singleQuotesStack.size() == 1;
-
-        if(lengthOfComment > 1 && previousChar!='*' && singleQuotesStack.size() == 0 && currentChar == singleLineCommentQString.at(0)  && nextChar == singleLineCommentQString.at(1)){
-            singleLineStartIndex = i;
-            break;
-        }
-
-        if(lengthOfComment == 1 && previousChar!='*' && singleQuotesStack.size() == 0 && currentChar == singleLineCommentQString[0]){
-            singleLineStartIndex = i;
-            break;
-        }
-
-        if (singleQuotesStack.size() == 0 && !isFalseQuote && currentChar == '\''){
-            singleQuotesStack.push_back('\'');
-            start = i;
-        }
-        else if (singleQuotesStack.size() == 1 && !isFalseQuote && currentChar == '\'' && i != start && singleLineStartIndex == -1){
-            singleQuotesStack.pop_back();
-            end = i;
-            setFormat(start, end - start + 1, quotationFormat);
-        }
-
-
-    }
-
-
+    // If there is a startIndex, highlight the comments
     while (startIndex >= 0) {
         QRegularExpressionMatch match = commentEndExpression.match(text, startIndex);
         int endIndex = match.capturedStart();
@@ -148,6 +83,7 @@ void Highlighter::highlightBlock(const QString &text)
         startIndex = text.indexOf(commentStartExpression, startIndex + commentLength);
     }
 
+    // Format the text to find if there is text to find
     if (textToFind != "") {
         QTextCharFormat colorFormat;
         colorFormat.setBackground(Qt::yellow);
@@ -169,6 +105,7 @@ void Highlighter::setLanguage(Language *lang)
     highlightingRules.clear();
 
 
+    // Set highligting rules for keywords
     HighlightingRule rule;
     keywordFormat.setForeground(QColor(255, 128, 0));
     keywordFormat.setFontWeight(QFont::Bold);
@@ -180,22 +117,26 @@ void Highlighter::setLanguage(Language *lang)
         highlightingRules.append(rule);
     }
 
+    // Set the Class format for Qt classes
     classFormat.setFontWeight(QFont::Bold);
     classFormat.setForeground(QColor(153, 51, 255));
     rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b");
     rule.format = classFormat;
     highlightingRules.append(rule);
 
+    // Set the format for comments
     quotationFormat.setForeground(QColor(0, 204, 102));
     rule.pattern = QRegularExpression("\".*\"");
     rule.format = quotationFormat;
 
+    // Set the format for functions
     functionFormat.setFontItalic(true);
     functionFormat.setForeground(QColor(51, 153, 255));
     rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()");
     rule.format = functionFormat;
     highlightingRules.append(rule);
 
+    // Set format for single-line comments
     singleLineCommentFormat.setForeground(Qt::red);
     rule.format = singleLineCommentFormat;
 

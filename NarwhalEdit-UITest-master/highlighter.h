@@ -17,9 +17,23 @@ class Highlighter : public QSyntaxHighlighter
 public:
     Highlighter(QTextDocument *parent = 0, Language *language = 0);
     QString textToFind = "";
+
+    /**
+     * @brief Sets the language for the highlighter
+     * @param Language
+     * @return none
+     */
+
     void setLanguage(Language *lang);
 
 protected:
+
+    /**
+     * @brief Highlights a block based on highlighting rules
+     * @param QString
+     * @return none
+     */
+
     void highlightBlock(const QString &text) override;
 
 private:

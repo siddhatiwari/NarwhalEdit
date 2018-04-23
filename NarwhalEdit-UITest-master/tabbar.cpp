@@ -41,6 +41,7 @@ bool TabBar::handleTabCloseRequest(int tabIndex)
         bool unsavedDocuments = false;
         CodeEditor *currentEditor = qobject_cast<CodeEditor *>(widget(tabIndex));
 
+        // Checks for scenarios that would stop closing of editor
         if (currentEditor->editorServer->isListening())
             serversOpen = true;
         if (currentEditor->editorSocket->state() == QAbstractSocket::ConnectedState)
@@ -48,6 +49,7 @@ bool TabBar::handleTabCloseRequest(int tabIndex)
         if (!currentEditor->getDocumentSaved())
             unsavedDocuments = true;
 
+        // Displays messages based on scenarios that are active
         QMessageBox *message = new QMessageBox();
         message->addButton(QMessageBox::Yes);
         message->addButton(QMessageBox::No);
@@ -75,6 +77,7 @@ bool TabBar::handleTabCloseRequest(int tabIndex)
 
 bool TabBar::quitRequested()
 {
+    // Go through every tab and check if you still want to quit
     bool quitConfirmed = false;
     for (int i = 0; i < count(); i++) {
         quitConfirmed = handleTabCloseRequest(i);

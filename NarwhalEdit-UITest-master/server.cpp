@@ -26,6 +26,7 @@ void Server::newConnection()
     while (hasPendingConnections()) {
         qDebug() << "Connecting...";
 
+        // Create socket and connect to the server
         QTcpSocket *socket = nextPendingConnection();
         connect(socket, SIGNAL(readyRead()), SLOT(readyRead()));
         connect(socket, SIGNAL(disconnected()), SLOT(disconnected()));
@@ -37,6 +38,7 @@ void Server::newConnection()
 
 void Server::disconnected()
 {
+    // Remove a socket that has been disconnected
     QTcpSocket *socket = static_cast<QTcpSocket *>(sender());
     for (int i = 0; i < sockets.size(); i++) {
         if (sockets.at(i) == socket)
