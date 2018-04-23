@@ -5,6 +5,7 @@
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
 #include <QRegularExpression>
+#include <string>
 #include "language.h"
 
 class QTextDocument;
@@ -16,11 +17,13 @@ class Highlighter : public QSyntaxHighlighter
 public:
     Highlighter(QTextDocument *parent = 0, Language *language = 0);
     QString textToFind = "";
+    void setLanguage(Language *lang);
 
 protected:
     void highlightBlock(const QString &text) override;
 
 private:
+    Language* language;
     struct HighlightingRule
     {
         QRegularExpression pattern;

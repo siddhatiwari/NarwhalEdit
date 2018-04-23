@@ -39,7 +39,15 @@ SOURCES += \
     c_plus_plus.cpp \
     globals.mm \
     main.cpp \
-    findwidget.cpp
+    findwidget.cpp \
+    java.cpp \
+    javascript.cpp \
+    ruby.cpp \
+    python.cpp \
+    c.cpp \
+    c_sharp.cpp \
+    swift.cpp \
+    objectivec.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -50,7 +58,15 @@ HEADERS += \
     language.h \
     c_plus_plus.h \
     globals.h \
-    findwidget.h
+    findwidget.h \
+    java.h \
+    javascript.h \
+    ruby.h \
+    python.h \
+    c.h \
+    c_sharp.h \
+    swift.h \
+    objectivec.h
 
 FORMS += \
         mainwindow.ui

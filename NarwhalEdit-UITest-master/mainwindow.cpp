@@ -14,6 +14,15 @@
 #include <QBoxLayout>
 #include "mainwindow.h"
 #include "codeeditor.h"
+#include "c_plus_plus.h"
+#include "java.h"
+#include "javascript.h"
+#include "python.h"
+#include "c.h"
+#include "c_sharp.h"
+#include "ruby.h"
+#include "swift.h"
+#include "objectivec.h"
 #include "globals.h"
 
 MainWindow::MainWindow()
@@ -61,6 +70,29 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 void MainWindow::createTab(CodeEditor *codeEditor, QString title)
 {
     tabBar->createEditorTab(codeEditor, title);
+
+    QString languageName = highlightingButton->text();
+    qDebug() << languageName;
+
+    if (languageName == "C++")
+        codeEditor->getHighlighter()->setLanguage(new C_Plus_Plus());
+    else if (languageName == "C")
+        codeEditor->getHighlighter()->setLanguage(new C());
+    else if (languageName == "C#")
+        codeEditor->getHighlighter()->setLanguage(new C_Sharp());
+    else if (languageName == "Java")
+        codeEditor->getHighlighter()->setLanguage(new Java());
+    else if (languageName == "JavaScript")
+        codeEditor->getHighlighter()->setLanguage(new JavaScript());
+    else if (languageName == "Swift")
+        codeEditor->getHighlighter()->setLanguage(new Swift());
+    else if (languageName == "Python")
+        codeEditor->getHighlighter()->setLanguage(new Python());
+    else if (languageName == "Ruby")
+        codeEditor->getHighlighter()->setLanguage(new Ruby());
+    else if (languageName == "Objective-C")
+        codeEditor->getHighlighter()->setLanguage(new ObjectiveC());
+
     connect(codeEditor, SIGNAL(updateLineNumber(int)), this, SLOT(updateLineNumber(int)));
     int lastTabIndex = tabBar->count() - 1;
     tabBar->setCurrentIndex(lastTabIndex);
@@ -218,7 +250,7 @@ void MainWindow::copy()
 void MainWindow::paste()
 {
     currentEditor->paste();
-    qDebug() << "asfd";
+    qDebug() << QString::number(currentEditor->getCurrentLine());
     lineNumberLabel->setText("Line: " + QString::number(currentEditor->getCurrentLine()));
 }
 
@@ -252,7 +284,9 @@ void MainWindow::setupStatusBar()
 
 void MainWindow::createActions()
 {
-    QStringList options = {"asdf", "fda", "fdas"};
+    QStringList options = {"C++", "C", "C#",
+                           "Java", "JavaScript", "Swift",
+                           "Python", "Ruby", "Objective-C"};
     for (int i = 0; i < options.size(); i++) {
         QAction *syntaxHighightAct = new QAction(options.at(i));
         syntaxHighlightingActs.push_back(syntaxHighightAct);
@@ -335,7 +369,7 @@ void MainWindow::createActions()
     darkThemeAct->setStatusTip(tr("Sets the editor theme to Dark"));
     connect(darkThemeAct, SIGNAL(triggered(bool)), this, SLOT(darkThemeAction()));
 
-    defaultThemeAct = new QAction(tr("Default Theme"), this);
+    defaultThemeAct = new QAction(tr("Light Theme"), this);
     defaultThemeAct->setStatusTip(tr("Sets the editor theme to Default"));
     connect(defaultThemeAct, SIGNAL(triggered(bool)), this, SLOT(defaultThemeAction()));
 
@@ -509,6 +543,7 @@ void MainWindow::darkThemeAction()
             CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
             editor->highlightCurrentLine();
         }
+        currentEditor->getHighlighter()->rehighlight();
 
         QSettings settings;
         settings.beginGroup("MainWindow");
@@ -527,6 +562,7 @@ void MainWindow::defaultThemeAction()
             CodeEditor *editor = qobject_cast<CodeEditor *>(tabBar->widget(i));
             editor->highlightCurrentLine();
         }
+        currentEditor->doRehighlight();
 
         QSettings settings;
         settings.beginGroup("MainWindow");
@@ -547,8 +583,29 @@ void MainWindow::ctrlWAction()
 
 void MainWindow::updateHighlightingAction(int index)
 {
-    qDebug() << syntaxHighlightingActs.at(index)->text();
+    QString languageName = syntaxHighlightingActs.at(index)->text();
+
+    if (languageName == "C++")
+        currentEditor->getHighlighter()->setLanguage(new C_Plus_Plus());
+    else if (languageName == "C")
+        currentEditor->getHighlighter()->setLanguage(new C());
+    else if (languageName == "C#")
+        currentEditor->getHighlighter()->setLanguage(new C_Sharp());
+    else if (languageName == "Java")
+        currentEditor->getHighlighter()->setLanguage(new Java());
+    else if (languageName == "JavaScript")
+        currentEditor->getHighlighter()->setLanguage(new JavaScript());
+    else if (languageName == "Swift")
+        currentEditor->getHighlighter()->setLanguage(new Swift());
+    else if (languageName == "Python")
+        currentEditor->getHighlighter()->setLanguage(new Python());
+    else if (languageName == "Ruby")
+        currentEditor->getHighlighter()->setLanguage(new Ruby());
+    else if (languageName == "Objective-C")
+        currentEditor->getHighlighter()->setLanguage(new ObjectiveC());
+
     highlightingButton->setDefaultAction(syntaxHighlightingActs.at(index));
+    currentEditor->doRehighlight();
 }
 
 void MainWindow::updateNetworkMenuOptions()

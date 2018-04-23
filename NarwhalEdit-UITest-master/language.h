@@ -3,6 +3,7 @@
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
 #include <QRegularExpression>
+#include <string>
 
 class Language
 {
@@ -10,12 +11,12 @@ protected:
     QStringList keywordPatterns;
     QRegularExpression commentStartExpression;
     QRegularExpression commentEndExpression;
-    QRegularExpression singleLineRegularExpression;
+    std::string singleLineComment;
 public:
     QStringList getKeywordPatterns();
     QRegularExpression getCommentStartExpression();
     QRegularExpression getCommentEndExpression();
-    QRegularExpression getSingleLineRegularExpression();
+    std::string getSingleLineComment();
 };
 
 #endif // LANGUAGE_H

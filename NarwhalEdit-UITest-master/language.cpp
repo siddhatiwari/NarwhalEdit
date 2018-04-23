@@ -8,6 +8,6 @@ QRegularExpression Language::getCommentStartExpression(){
 QRegularExpression Language::getCommentEndExpression(){
     return this->commentEndExpression;
 }
-QRegularExpression Language::getSingleLineRegularExpression(){
-    return this->singleLineRegularExpression;
+std::string Language::getSingleLineComment(){
+    return this->singleLineComment;
 }

@@ -4,8 +4,17 @@
 #include <algorithm>
 #include "codeeditor.h"
 #include "mainwindow.h"
-#include "c_plus_plus.h"
 #include "globals.h"
+#include "c_plus_plus.h"
+#include "java.h"
+#include "javascript.h"
+#include "python.h"
+#include "c.h"
+#include "c_sharp.h"
+#include "ruby.h"
+#include "swift.h"
+#include "objectivec.h"
+
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -41,7 +50,7 @@ void CodeEditor::setupEditor()
     lineNumberArea = new LineNumberArea(this);
 
     // Sets up highlighter
-    highlighter = new Highlighter(document(), new C_Plus_Plus());
+    highlighter = new Highlighter(document(), new C_Plus_Plus());//DefaultHighlighter
 
     // Sets up autocompleter
     QCompleter *cmp = new QCompleter(this->parent());
@@ -67,6 +76,7 @@ void CodeEditor::setupEditor()
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, &CodeEditor::cursorPositionChanged, [this]() {
         highlightCurrentLine();
+        calculateNewLineNumber();
     });
     connect(this, &CodeEditor::textChanged, [this]() {
         rehighlight();
@@ -75,10 +85,13 @@ void CodeEditor::setupEditor()
         calculateNewLineNumber();
         documentSaved = false;
     });
-    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(calculateNewLineNumber()));
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+}
+
+Highlighter* CodeEditor::getHighlighter() {
+    return highlighter;
 }
 
 bool CodeEditor::getDocumentSaved()
@@ -93,8 +106,12 @@ void CodeEditor::setDocumentSaved(bool saved)
 
 int CodeEditor::getCurrentLine()
 {
-    calculateNewLineNumber();
-    return currentLine;
+    return firstVisibleBlock().blockNumber() +  cursorRect().y() / cursorRect().size().height() + 1;
+}
+
+void CodeEditor::doRehighlight()
+{
+    rehighlight();
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -207,8 +224,6 @@ void CodeEditor::completeText()
 {
     blockSignals(true);
 
-    tryIgnore();
-    tryAutocompete();
     find(findingText);
     writeData();
 
@@ -220,32 +235,42 @@ void CodeEditor::tryAutocompete()
     QString currentText = toPlainText();
     if (currentText.size() > 0 ) {
         int position = textCursor().position();
-        QChar previousChar = currentText.at(position - 1);
-        if (AUTOCOMPLETE_CHARACTERS.find(previousChar) != AUTOCOMPLETE_CHARACTERS.end()) {
-            insertPlainText(AUTOCOMPLETE_CHARACTERS.at(previousChar));
-            moveCursor(QTextCursor::Left);
+        if (position - 1 >= 0) {
+            QChar previousChar = currentText.at(position - 1);
+            if (AUTOCOMPLETE_CHARACTERS.find(previousChar) != AUTOCOMPLETE_CHARACTERS.end()) {
+                insertPlainText(AUTOCOMPLETE_CHARACTERS.at(previousChar));
+                moveCursor(QTextCursor::Left);
+            }
         }
     }
 }
 
 void CodeEditor::tryIgnore()
 {
+
     QString currentText = toPlainText();
-    int position = textCursor().position();
+    qDebug() << textCursor().position();
+    int position = textCursor().position() - 1;
 
     if (position < currentText.size()) {
-        QChar previousChar = currentText.at(position - 1);
-        QChar nextChar = currentText.at(position);
+        if (position - 1 >= 0 && position + 1 < currentText.size()) {
+            //qDebug() << "1";
+            QChar previousChar = currentText.at(position - 1);
+            //qDebug() << "2";
+            QChar nextChar = currentText.at(position + 1);
 
-        std::vector<QChar> ignoredChars;
-        ignoredChars.reserve(AUTOCOMPLETE_CHARACTERS.size());
-        for(auto const& imap: AUTOCOMPLETE_CHARACTERS)
-            ignoredChars.push_back(imap.second);
+            std::vector<QChar> ignoredChars;
+            ignoredChars.reserve(AUTOCOMPLETE_CHARACTERS.size());
+            for(auto const& imap: AUTOCOMPLETE_CHARACTERS)
+                ignoredChars.push_back(imap.second);
 
-        if(std::find(ignoredChars.begin(), ignoredChars.end(), nextChar) != ignoredChars.end()) {
-            if (previousChar == nextChar) {
-                moveCursor(QTextCursor::Right);
-                textCursor().deletePreviousChar();
+            if(std::find(ignoredChars.begin(), ignoredChars.end(), nextChar) != ignoredChars.end()) {
+                if (AUTOCOMPLETE_CHARACTERS.count(previousChar)) {
+                    if (AUTOCOMPLETE_CHARACTERS.at(previousChar) == nextChar) {
+                        moveCursor(QTextCursor::Right);
+                        textCursor().deletePreviousChar();
+                    }
+                }
             }
         }
     }
@@ -292,10 +317,12 @@ void CodeEditor::findCompletionKeywords()
     QString currentText = toPlainText();
     int typedStart = -1;
     int typedEnd = textCursor().position();
-    for (int x = typedEnd - 1; x >= 0; x--){
-        if (std::find(excludeChars.begin(), excludeChars.end(), currentText[x]) != excludeChars.end()) {
-            typedStart = x + 1;
-            break;
+    if (typedEnd - 1 >= 0) {
+        for (int x = typedEnd - 1; x >= 0; x--){
+            if (std::find(excludeChars.begin(), excludeChars.end(), currentText[x]) != excludeChars.end()) {
+                typedStart = x + 1;
+                break;
+            }
         }
     }
 
@@ -304,7 +331,7 @@ void CodeEditor::findCompletionKeywords()
     QStringList wordList;
     QString tempKeyword;
     for (int i = 0; i < currentText.size(); i++) {
-        if (std::find(excludeChars.begin(), excludeChars.end(), currentText[i]) != std::end(excludeChars)) {
+        if (std::find(excludeChars.begin(), excludeChars.end(), currentText[i]) != std::end(excludeChars) && currentText.size()>0) {
             if (!wordList.contains(tempKeyword))
                 wordList << tempKeyword;
             tempKeyword = "";
@@ -351,6 +378,11 @@ void CodeEditor::focusInEvent(QFocusEvent *e)
 
 void CodeEditor::keyPressEvent(QKeyEvent *e)
 {
+    if (e->key() == Qt::Key_Backspace && e->key() != Qt::Key_Backspace) {
+        tryIgnore();
+        tryAutocompete();
+    }
+
     if (cmpltr && cmpltr->popup()->isVisible()) {
        switch (e->key()) {
        case Qt::Key_Enter:

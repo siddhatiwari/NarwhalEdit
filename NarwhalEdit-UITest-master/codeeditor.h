@@ -34,6 +34,8 @@ public:
     void setDocumentSaved(bool saved);
     int getCurrentLine();
     void highlightCurrentLine();
+    Highlighter* getHighlighter();
+    void doRehighlight();
 
 private:
     void setupEditor();
